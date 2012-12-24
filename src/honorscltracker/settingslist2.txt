@@ -1,0 +1,7 @@
+Extras in defaultSettings:
+dividerLinePaint
+dividerLineWidth
+rop[0], decodeGradient(prop[1]));
+rop[0], decodeColor(prop[1]));
+rop[0], decodeFont(prop[1]));
+rop[0], val);
