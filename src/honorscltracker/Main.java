@@ -33,6 +33,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextBoundsType;
+import javafx.scene.web.HTMLEditor;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -193,6 +194,7 @@ public class Main extends Application {
         v.setSpacing(10);
         
         final ComboBox yearCombo = new ComboBox();
+        yearCombo.setEditable(true);
         yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years.getYearsList()));
         HBox hb1 = new HBox(); hb1.getChildren().add(new Label("Year:"));
         hb1.getChildren().add(yearCombo);
@@ -210,7 +212,8 @@ public class Main extends Application {
         contactEmailField.setPromptText("Contact email:");
         final TextField contactPhoneField = new TextField();
         contactEmailField.setPromptText("Contact phone:");
-        HBox hb3 = new HBox(); hb3.getChildren().add(new Label("Contact:"));
+        HBox hb3 = new HBox();
+        hb3.getChildren().add(new Label("Contact:"));
         VBox contact = new VBox();
         contact.getChildren().add(contactNameField);
         contact.getChildren().add(contactEmailField);
@@ -218,134 +221,59 @@ public class Main extends Application {
         hb3.getChildren().add(contact);
         v.getChildren().add(hb3);
         
-        Button addJog = new Button("Add Jog");
-        addJog.setOnAction(new EventHandler<ActionEvent>() {
+        final TextField shortDescField = new TextField();
+        shortDescField.setPromptText("Organization, e.g.");
+        HBox hb4 = new HBox();
+        hb4.getChildren().add(new Label("Enter a short description: "));
+        hb4.getChildren().add(shortDescField);
+        v.getChildren().add(hb4);
+        
+        final TextField hoursField = new TextField();
+        hoursField.setPromptText("Sets");
+        HBox hb5 = new HBox();
+        hb5.getChildren().add(new Label("Hours:"));
+        hb5.getChildren().add(hoursField);
+        
+        final HTMLEditor detailsField = new HTMLEditor();
+        v.getChildren().add(detailsField);
+        
+        Button addActivity = new Button("Add Comp Learning Event");
+        addActivity.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent arg0) {
                 GregorianCalendar d = new GregorianCalendar();
-                double distanceVal = -1;
-                double timeVal = -1;
-                boolean goForIt = true;
-                try{
-                    d.setTimeInMillis(format.parse(dateField.getText()).getTime());
-                } catch(ParseException ex) { 
-                    dateField.setText("");
-                    goForIt = false;
-                }
+                String contactName = contactNameField.getText();
+                String contactEmail = contactEmailField.getText();
+                String contactPhone = contactPhoneField.getText();
+                String year = yearCombo.getValue().toString();
+                String shortDesc = shortDescField.getText();
+                String details = detailsField.getHtmlText();
+                double hours = 0;
+                int startYr = -1;
                 try {
-                    distanceVal = Double.parseDouble(contactNameField.getText());
+                    hours = Double.parseDouble(hoursField.getText());
+                    startYr = Integer.parseInt(year.substring(0, 4));
                 } catch(NumberFormatException ex) {
-                    contactNameField.setText("");
+                    
                 }
-                try {
-                    timeVal = Integer.parseInt(contactEmailField.getText());
-                } catch(NumberFormatException ex) {
-                    contactEmailField.setText("");
-                }
-                CLActivity j = null;
-                if(distanceVal < 0 && timeVal > 0) {
-                    j = new Jog(60*timeVal,d);
-                } else if(distanceVal > 0 && timeVal < 0) {
-                    j = new Jog(distanceVal, Unit.MILE, d);
-                } else if(distanceVal > 0 && timeVal > 0) {
-                    j = new Jog(distanceVal, Unit.MILE, timeVal*60, d);
-                } else {
-                    j = new Jog(d);
-                }
-                if(goForIt) {
+                CLActivity j = new CLActivity();
+                Contact c = new Contact();
+                c.setEmail(contactEmail);
+                c.setName(contactName);
+                c.setPhone(contactPhone);
+                j.setContact(c);
+                j.setDate(d);
+                j.setDesc(shortDesc);
+                j.setDetails(details);
+                j.setHours(hours);
+                if(startYr > -1) {
                     //go for it
-                    years.addData(j);
+                    years.get(years.indexOf(startYr)).addCLActivity(j);
                 }
             }
         });
-        v.getChildren().add(addJog);
-        
-        Separator sep = new Separator();
-        v.getChildren().add(sep);
-        
-        
-        
-        HBox exerciseData = new HBox();
-        exerciseData.setSpacing(5);
-//        exerciseData.setAlignment(Pos.CENTER);
-        final TextField sets = new TextField();
-        sets.setPromptText("Sets");
-        exerciseData.getChildren().add(sets);
-        Text of = new Text("of");
-        of.setFill((Paint) settings.get("datascreenLabelPaint"));
-        exerciseData.getChildren().add(of);
-        final TextField reps = new TextField();
-        reps.setPromptText("Reps");
-        exerciseData.getChildren().add(reps);
-        v.getChildren().add(exerciseData);
-        
-        Button addExer = new Button("Add Exercise");
-        addExer.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent arg0) {
-                GregorianCalendar d = new GregorianCalendar();
-                int s = 0;
-                int r = 0;
-                boolean goForIt = true;
-                try{
-                    d.setTimeInMillis(format.parse(dateField.getText()).getTime());
-                } catch(ParseException ex) { 
-                    dateField.setText(""); 
-                    goForIt = false;
-                }
-                try {
-                    s = Integer.parseInt(sets.getText());
-                } catch(NumberFormatException ex) {
-                    sets.setText("");
-                    goForIt = false;
-                }
-                try {
-                    r = Integer.parseInt(reps.getText());
-                } catch(NumberFormatException ex) {
-                    reps.setText("");
-                    goForIt = false;
-                }
-                if(goForIt) {
-                    //go for it
-                    Exercise e = new Exercise(yearCombo.getValue().toString(),s,r,d);
-                    years.addData(e);
-                }
-            }
-        });
-        v.getChildren().add(addExer);
-        
-        Separator sep2 = new Separator();
-        
-        v.getChildren().add(sep2);
-        
-        Text t3 = new Text("New Exercise");
-        t3.setFont((Font) settings.get("datascreenLabelFont"));
-        t3.setFill((Paint) settings.get("datascreenLabelPaint"));
-        v.getChildren().add(t3);
-        
-        final TextField newExer = new TextField();
-        newExer.setPromptText("Exercise name");
-        v.getChildren().add(newExer);
-        
-        Button newExerButton = new Button("Add new exercise");
-        newExerButton.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent arg0) {
-                String name = newExer.getText();
-                if(name != null && !name.equals("")) {
-                    years.addExerciseName(name);
-                    yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years.getYearsList()));
-                }
-            }
-        });
-        v.getChildren().add(newExerButton);
-        ScrollPane scroll = new ScrollPane();
-        scroll.setStyle("-fx-background-color:none;");
-        scroll.setPrefSize((Double) settings.get("stageWidth")-20, (Double) settings.get("stageHeight")-35);
-        scroll.setContent(v);
+        v.getChildren().add(addActivity);
         
         Group backButton = new Group();
         Rectangle r = new Rectangle(0,0,30,7);
@@ -371,7 +299,6 @@ public class Main extends Application {
         backButton.setLayoutY((Double) settings.get("stageHeight") - 34);
         
         dataScreen = new Group();
-        dataScreen.getChildren().add(scroll);
         dataScreen.getChildren().add(backButton);
         //TODO: data screen
     }
@@ -1058,14 +985,15 @@ public class Main extends Application {
             
             p.println("--Data--");
             for(Year m : years) {
-                for(Date d: m.getAllDates()) {
-                    for(Jog j : m.getJogs(d)) {
-                        String line = "j"+d.month+"/"+d.day+"/"+d.year+";{";
-                        line += j.isDistanceKnown()
-                                ?j.getDist()
-                                :"n/a";
-                        line += ","+j.getDistUnits().toString()+",";
-                        line += (j.isTimed() ? j.getTime() : "n/a") + "}";
+                for(String d: m.getAllDescs()) {
+                    for(CLActivity j : m.getCLActivities(d)) {
+                        String line = "~Activity~\n";
+                        line += "desc="+d+"\n";
+                        line += "date="+format.format(j.getDate().getTime())+"\n";
+                        Contact c = j.getContact();
+                        line += "contact=["+c.getName()+","+c.getEmail()+","+c.getPhone()+"]\n";
+                        line += "hours="+j.getHours()+"\n";
+                        line += j.getDetails()+"\n~/Activity~\n";
                         p.println(line);
                     }
                     for(Exercise e: m.getExercises(d)) {
