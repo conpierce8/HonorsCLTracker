@@ -92,7 +92,7 @@ public class Main extends Application {
     
     private final String[] recognizedPrefs = new String[]{"datascreenBGPaint", 
             "datascreenBGStroke", "datascreenButtonBGPaint", "datascreenButtonFGPaint", 
-            "datascreenButtonOutlinePaint", "datascreenLabelFont", "datascreenLabelPaint", 
+            "datascreenButtonOutlinePaint", 
             "datascreenWindowButtonBGPaint", "datascreenWindowButtonFGPaint", "homescreenBGPaint", 
             "homescreenBGStroke", "homescreenTextFont", "homescreenTextPaint", 
             "homescreenWindowButtonBGPaint", "homescreenWindowButtonFGPaint", "mainscreenBGPaint", 
@@ -150,43 +150,41 @@ public class Main extends Application {
     } 
     
     private void defaultSettings() {
-        settings.put("homescreenBGPaint", Color.BLACK.brighter().brighter());
-        settings.put("homescreenBGStroke", Color.BLACK);
-        settings.put("homescreenTextPaint", Color.WHITE);
+        settings.put("homescreenBGPaint", Color.BLACK);
+        settings.put("homescreenBGStroke", new Color(1,.5,0,.8));
+        settings.put("homescreenTextPaint", Color.LIGHTGRAY);
         settings.put("homescreenTextFont", new Font("Arial", 16));
-        settings.put("mainscreenBGPaint", Color.BLACK.brighter().brighter());
+        settings.put("mainscreenBGPaint", new Color(.506, .243, .118, .8));
         settings.put("mainscreenBGStroke", Color.BLACK);
-        settings.put("datascreenBGPaint", Color.BLACK.brighter().brighter());
-        settings.put("datascreenBGStroke", Color.BLACK);
-        settings.put("mainscreenWindowButtonFGPaint", Color.WHITE);
-        settings.put("homescreenWindowButtonFGPaint", Color.WHITE);
-        settings.put("datascreenWindowButtonFGPaint", Color.WHITE);
-        settings.put("mainscreenWindowButtonBGPaint", new Color(0,0,0,0));
-        settings.put("homescreenWindowButtonBGPaint", new Color(0,0,0,0));
-        settings.put("datascreenWindowButtonBGPaint", new Color(0,0,0,0));
-        settings.put("datascreenLabelFont", new Font("Arial",16));
-        settings.put("datascreenLabelPaint", Color.WHITESMOKE);
-        settings.put("mainscreenLabelPaint", Color.LIME);
+        settings.put("datascreenBGPaint", new Color(.1, .1, .1, .8));
+        settings.put("datascreenBGStroke", Color.TRANSPARENT);
+        settings.put("mainscreenWindowButtonFGPaint", new Color(1,.5,0,1));
+        settings.put("homescreenWindowButtonFGPaint", new Color(1,.5,0,1));
+        settings.put("datascreenWindowButtonFGPaint", new Color(1,.5,0,1));
+        settings.put("mainscreenWindowButtonBGPaint", Color.TRANSPARENT);
+        settings.put("homescreenWindowButtonBGPaint", Color.TRANSPARENT);
+        settings.put("datascreenWindowButtonBGPaint", Color.TRANSPARENT);
+        settings.put("mainscreenLabelPaint", Color.WHITE);
         settings.put("mainscreenLabelFont", new Font("Arial", 30));
-        settings.put("tableDataTextPaint", Color.WHITESMOKE);
+        settings.put("tableDataTextPaint", Color.BLACK);
         settings.put("tableDataTextFont", new Font("Arial", 12));
-        settings.put("tableHeaderTextPaint", Color.LIME);
+        settings.put("tableHeaderTextPaint", Color.WHITE);
         settings.put("tableHeaderTextFont", new Font("Comic Sans MS", 16));
-        settings.put("mainscreenButtonFGPaint", Color.LIME);
-        settings.put("mainscreenButtonBGPaint", new Color(0,0,0,0));
-        settings.put("mainscreenButtonOutlinePaint", Color.LIME);
-        settings.put("datascreenButtonFGPaint", Color.LIME);
-        settings.put("datascreenButtonBGPaint", new Color(0,0,0,0));
-        settings.put("datascreenButtonOutlinePaint", Color.LIME);
-        settings.put("tableRow1BGPaint", Color.GRAY);
-        settings.put("tableRow2BGPaint", new Color(1,1,1,0));
-        settings.put("tableHeaderBGPaint", Color.BLACK);
+        settings.put("mainscreenButtonFGPaint", Color.WHITE);
+        settings.put("mainscreenButtonBGPaint", Color.TRANSPARENT);
+        settings.put("mainscreenButtonOutlinePaint", Color.WHITE);
+        settings.put("datascreenButtonFGPaint", Color.BLACK);
+        settings.put("datascreenButtonBGPaint", Color.TRANSPARENT);
+        settings.put("datascreenButtonOutlinePaint", Color.BLACK);
+        settings.put("tableRow1BGPaint", new Color(1, 0.5, 0, 1));
+        settings.put("tableRow2BGPaint", new Color(1, .639, .288, 1));
+        settings.put("tableHeaderBGPaint", Color.TRANSPARENT);
         settings.put("stageWidth", 700.0);
         settings.put("stageHeight", 450.0);
         settings.put("scrollbarWidth", 10.0);
-        settings.put("scrollbarFGPaint", Color.BLACK);
-        settings.put("scrollbarFGStroke", Color.LIGHTGRAY);
-        settings.put("scrollbarBGPaint", Color.BLUEVIOLET);
+        settings.put("scrollbarFGPaint", new Color(1, .5, 0, 1));
+        settings.put("scrollbarFGStroke", Color.BLACK);
+        settings.put("scrollbarBGPaint", new Color(1, 1, 1, .4));
     }
     
     private void getDataInputScreen() {
@@ -307,7 +305,9 @@ public class Main extends Application {
         homeScreen = new VBox();
         homeScreen.setSpacing(20);
         homeScreen.setAlignment(Pos.CENTER);
-        Text t = new Text("Welcome to RunningBuddy!\nPlease enter file name and choose an action:");
+        Text t = new Text("Welcome to the Honors\n"
+                + "Comp Learning tracker!\n"
+                + "Please enter file name and choose an action:");
         t.setTextAlignment(TextAlignment.CENTER);
         t.setFont((Font) settings.get("homescreenTextFont"));
         t.setFill((Paint) settings.get("homescreenTextPaint"));
@@ -468,9 +468,6 @@ public class Main extends Application {
 
             @Override
             public void handle(MouseEvent arg0) {
-//                getDataInputScreen();
-//                dataScreen.setLayoutX(10);
-//                dataScreen.setLayoutY(25);
                 root.getChildren().remove(mainScreen);
                 root.getChildren().add(homeScreen);
                 file = null;
@@ -847,146 +844,12 @@ public class Main extends Application {
         r.setLayoutX(0); r.setLayoutY(y);
         return r;
     }
-    //</editor-fold>
-    
-    //<editor-fold defaultstate="collapsed" desc=" IO Functions ">
-    /**
-     * Converts a double value in the range [0.0, 1.0] into a hex color: the
-     * double is first converted to an integer in the range [0, 255], then the
-     * hex representation of that integer is calculated and returned.
-     * @param d in the range [0.0, 1.0]; treated as an RGBA color component
-     * (i.e. an integer in the range [0, 255]
-     * @return two-character hex string that represents the integer conversion
-     * of <code>d</code>
-     */
-    private String getHexFromDouble(double d) {
-        if(d > 1 || d < 0) {
-            throw new IllegalArgumentException("Value must be between 0 and 1");
-        } else {
-            String hex = "";
-            int val = (int) (d * 255);
-            switch(val / 16) {
-                case 10: hex += "A"; break;
-                case 11: hex += "B"; break;
-                case 12: hex += "C"; break;
-                case 13: hex += "D"; break;
-                case 14: hex += "E"; break;
-                case 15: hex += "F"; break;
-                default: hex += (val / 16); break;
-            }
-            switch(val % 16) {
-                case 10: hex += "A"; break;
-                case 11: hex += "B"; break;
-                case 12: hex += "C"; break;
-                case 13: hex += "D"; break;
-                case 14: hex += "E"; break;
-                case 15: hex += "F"; break;
-                default: hex += (val % 16); break;
-            }
-            return hex;
-        }
-    }
-    
-    /**
-     * Parses a two-character string containing a hex number to get the
-     * corresponding integer. All characters after the first two are ignored.
-     * @param s the string to be parsed
-     * @return the integer value of the hex string contained in s
-     */
-    private int getIntFromHex(String s) {
-        int val = 0;
-        switch(s.substring(0, 1).toLowerCase()) {
-            case "a": case "A": val += 160; break;
-            case "b": case "B": val += 176; break;
-            case "c": case "C": val += 192; break;
-            case "d": case "D": val += 208; break;
-            case "e": case "E": val += 224; break;
-            case "f": case "F": val += 240; break;
-            default: val += 16 * Integer.parseInt(s.substring(0, 1)); break;
-        }
-        switch(s.substring(1, 2).toLowerCase()) {
-            case "a": case "A": val += 10; break;
-            case "b": case "B": val += 11; break;
-            case "c": case "C": val += 12; break;
-            case "d": case "D": val += 13; break;
-            case "e": case "E": val += 14; break;
-            case "f": case "F": val += 15; break;
-            default: val += Integer.parseInt(s.substring(1, 2)); break;
-        }
-        return val;
-    }
-    
-    //<editor-fold defaultstate="collapsed" desc=" Output ">
-    /**
-     * Method intended for use inside encodePaint(Paint). Returns a String
-     * representation of <code>c</code> in the form #RRGGBBOO where RR is the
-     * hex value of the <code>Color</code>'s red component, GG is the hex for
-     * the green component, BB for the blue component, and OO is the hex for the
-     * opacity component.
-     */
-    private String encodeColor(Color c) {
-        String enc = "#";
-        enc += getHexFromDouble(c.getRed());
-        enc += getHexFromDouble(c.getGreen());
-        enc += getHexFromDouble(c.getBlue());
-        enc += getHexFromDouble(c.getOpacity());
-        return enc;
-    }
-    
-    private String encodeFont(Font f) {
-        return "f{"+f.getName()+","+f.getSize()+"}";
-    }
-    
-    private String encodePaint(Paint p) {
-        String enc = "";
-        if(p instanceof Color) {
-            Color c = (Color) p;
-            enc += encodeColor(c);
-        } else if(p instanceof LinearGradient) {
-            LinearGradient lg = (LinearGradient) p;
-            enc += "lg";
-            enc += "{"+lg.getStartX()+","+lg.getStartY()+","+lg.getEndX()+","
-                    +lg.getEndY()+"}";
-            for(Stop s: lg.getStops()) {
-                enc += "["+s.getOffset()+","+encodeColor(s.getColor())+"]";
-            }
-        } else if(p instanceof RadialGradient) {
-            RadialGradient rg = (RadialGradient) p;
-            enc = "rg{";
-            enc += rg.getFocusAngle()+","+rg.getFocusDistance()+"}";
-            for(Stop s: rg.getStops()) {
-                enc += "["+s.getOffset()+","+encodeColor(s.getColor())+"]";
-            }
-        }
-        return enc;
-    }
     
     private void writeToFile (File f) {
         try(java.io.PrintWriter p = new java.io.PrintWriter(f)) {
-            p.println("--Prefs--");
-            for(String s: settings.keySet()) {
-                Object val = settings.get(s);
-                String line = s+":";
-//                System.out.println(val.getClass().getName());
-                switch(val.getClass().getName()){
-                    case "javafx.scene.paint.Color": line += encodeColor((Color) val); break;
-                    case "javafx.scene.paint.RadialGradient":
-                    case "javafx.scene.paint.LinearGradient":
-                        line += encodePaint((Paint) val); break;
-                    case "javafx.scene.text.Font":
-                        line += encodeFont((Font) val); break;
-                    case "java.lang.Integer":
-                    case "java.lang.Double":
-                        line += val; break;
-                }
-                p.println(line);
-            }
-            p.println("--/Prefs--");
-            
-            p.println("--Data--");
-            for(Year m : years) {
-                for(String d: m.getAllDescs()) {
-                    for(CLActivity j : m.getCLActivities(d)) {
+            for(Year y : years) {
+                for(String d: y.getAllDescs()) {
+                    for(CLActivity j : y.getCLActivities(d)) {
                         String line = "~Activity~\n";
                         line += "desc="+d+"\n";
                         line += "date="+format.format(j.getDate().getTime())+"\n";
@@ -995,161 +858,12 @@ public class Main extends Application {
                         line += "hours="+j.getHours()+"\n";
                         line += j.getDetails()+"\n~/Activity~\n";
                         p.println(line);
-                    }
-                    for(Exercise e: m.getExercises(d)) {
-                        String line = "e"+d.month+"/"+d.day+"/"+d.year+";{";
-                        line += e.getName()+","+e.getSets()+","+e.getReps()+"}";
-                        p.println(line);
+                        p.println();
                     }
                 }
             }
-            p.println("--/Data--");
         } catch(IOException ex) {
             
-        }
-    }
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc=" Input ">
-    private Color decodeColor(String s) throws ParseException {
-        if(!s.startsWith("#") || s.length() != 9) {
-            throw new ParseException("Decoding color; expected #",1);
-        } else {
-            try {
-                double r = getIntFromHex(s.substring(1, 3)) / 255.0;
-                double g = getIntFromHex(s.substring(3, 5)) / 255.0;
-                double b = getIntFromHex(s.substring(5, 7)) / 255.0;
-                double a = getIntFromHex(s.substring(7)) / 255.0;
-                return new Color(r, g, b, a);
-            } catch(NumberFormatException ex) {
-                Pattern p = Pattern.compile("^[0-9AaBbCcDdEeFf]");
-                Matcher m = p.matcher(s);
-                m.find();
-                throw new ParseException("Illegal character in color string",m.start());
-            }
-        }
-    }
-
-    private Exercise decodeExercise(String s) throws ParseException {
-        int idx = 0;
-        try {
-            GregorianCalendar g = new GregorianCalendar();
-            java.util.Date d = format.parse(s.substring(1, s.indexOf(';')));
-            g.setTime(d);
-            idx = s.indexOf('{')+1;
-            String temp = s.substring(idx, idx = s.indexOf(',',idx)); //PRESERVE THIS temp
-            String name = temp;
-            temp = s.substring(idx+1, idx = s.indexOf(',', idx+1));
-            int sets = Integer.parseInt(temp);
-            temp = s.substring(idx+1, idx = s.indexOf('}'));
-            int reps = Integer.parseInt(temp);
-            return new Exercise(name, sets, reps, g);
-        } catch(ParseException ex) {
-            throw new ParseException("Illegal date format in exercise", 1);
-        } catch(NumberFormatException ex) {
-            throw new ParseException("Unexpected type in exercise, expected int",idx);
-        }
-    }
-    
-    private Font decodeFont(String string) throws ParseException {
-        try{
-            String name = string.substring(string.indexOf('{')+1, string.indexOf(','));
-            double size = Double.parseDouble(string.substring(string.indexOf(',')+1, string.indexOf('}')));
-            return new Font(name, size);
-        } catch (NumberFormatException ex) {
-            throw new ParseException("Illegal double value", string.indexOf(','));
-        }
-    }
-
-    private Paint decodeGradient(String s) throws ParseException {
-        boolean isLG = false;
-        if(s.startsWith("lg")) {
-            isLG = true;
-        }
-        int idx = 3;
-        double x1, y1, x2 = 0, y2 = 0;
-        try{
-            String temp = s.substring(idx, idx = s.indexOf(',',idx+1));
-            x1 = Double.parseDouble(temp);
-            if(isLG) {
-                temp = s.substring(idx+1, idx = s.indexOf(',',idx+1));
-                y1 = Double.parseDouble(temp);
-                x2 = Double.parseDouble(s.substring(idx+1, idx = s.indexOf(',',idx+1)));
-                y2 = Double.parseDouble(s.substring(idx+1, idx = s.indexOf('}',idx+1)));
-            } else {
-                temp = s.substring(idx+1, idx = s.indexOf('}',idx+1));
-                y1 = Double.parseDouble(temp);
-            }
-        } catch(NumberFormatException ex) {
-            throw new ParseException("Illegal value, expected type double", idx);
-        }
-        ArrayList<Stop> stops = new ArrayList<>();
-        if(!s.substring(idx+1).startsWith("[")) {
-            throw new ParseException("Error creating radial gradient: expected gradient stops",idx);
-        } else {
-            try {
-                while ( s.indexOf('[', idx) > -1 ) {
-                    String temp = s.substring(s.indexOf('[',idx)+1, idx = s.indexOf(',', idx));
-                    double d = Double.parseDouble(temp);
-                    temp = s.substring(s.indexOf(',', idx)+1, idx = s.indexOf(']', idx));
-                    Color c = decodeColor(temp);
-                    stops.add(new Stop(d, c));
-                }
-            } catch (NumberFormatException ex) {
-                throw new ParseException("Attemping to parse "+(isLG?"LG":"RG")+" stops, encountered invalid double value", idx);
-            } catch (ParseException | StringIndexOutOfBoundsException ex) {
-                throw new ParseException("Attempting to parse "+(isLG?"LG":"RG")+" stops, encountered invalid color value", idx);
-            }
-        }
-        if(isLG) {
-            return new LinearGradient(x1, y1, x2, y2, true, CycleMethod.NO_CYCLE, stops);
-        } else {
-            return new RadialGradient(x1, y1, 0.5, 0.5, 1, true, CycleMethod.NO_CYCLE, stops);
-        }
-    }
-
-    private Jog decodeJog(String s) throws ParseException {
-        int idx = 0;
-        try {
-            GregorianCalendar g = new GregorianCalendar();
-            java.util.Date d = format.parse(s.substring(1, s.indexOf(';')));
-            g.setTime(d);
-            idx = s.indexOf('{')+1;
-            String temp = s.substring(idx, idx = s.indexOf(',',idx)); //PRESERVE THIS temp
-            boolean hasdist = ! temp.toLowerCase().equals("n/a");
-            double dist = 0;
-            if(hasdist) {
-                dist = Double.parseDouble(temp);
-            }
-            temp = s.substring(idx+1, idx = s.indexOf(',', idx+1));
-            Unit units = Unit.valueOf(temp);
-            temp = s.substring(idx+1, idx = s.indexOf('}'));
-            boolean hastime = ! temp.toLowerCase().equals("n/a");
-            double time = 0;
-            if(hastime) {
-                time = Double.parseDouble(temp);
-            }
-            if(hasdist && hastime) {
-                return new Jog(dist, units, time, g);
-            } else if(hasdist) {
-                return new Jog(dist, units, g);
-            } else if(hastime) {
-                return new Jog(time, g);
-            } else {
-                return new Jog(g);
-            }
-        } catch(ParseException ex) {
-            throw new ParseException("Illegal date format in jog", 1);
-        } catch(NumberFormatException ex) {
-            throw new ParseException("Unexpected type, expected int or double",idx);
-        }
-    }
-    
-    private String getEnv(int mode) {
-        switch(mode) {
-            case 1: return "Prefs";
-            case 2: return "Data";
-            default: return "(Unknown Environment)";
         }
     }
     
@@ -1157,106 +871,14 @@ public class Main extends Application {
         int line = 0;
         try {
             java.io.BufferedReader b = new java.io.BufferedReader(new java.io.FileReader(file));
-            final int prefsMode = 1, dataMode = 2;
-            int mode = 0;
             String s = b.readLine();
             while(s != null) {
                 line ++;
-                switch (s) {
-                    case "--Prefs--":
-                    case "--Data--":
-                        if(mode != 0) {
-                            throw new ParseException("Unexpected "+s+" while inside an environment."
-                                    +" Expected --/"+getEnv(mode)+"-- first.", 0);
-                        } else {
-                            mode = (s.contains("P"))?prefsMode:dataMode;
-                        }
-                        break;
-                    case "--/Prefs--":
-                        if(mode == prefsMode) {
-                            mode = 0;
-                        } else {
-                            throw new ParseException("Unexpected "+s+" while outside"+
-                                    "Prefs environment", 0);
-                        }
-                        break;
-                    case "--/Data--":
-                        if(mode == dataMode) {
-                            mode = 0;
-                        } else {
-                            throw new ParseException("Unexpected "+s+" while outside"+
-                                    "Data environment", 0);
-                        }
-                        break;
-                    default:
-                        if(mode == prefsMode) {
-                            String[] prop = s.replaceAll("\\s", "").split(":");
-                            prop[1] = prop[1].trim();
-                            if(Arrays.binarySearch(recognizedPrefs, prop[0]) < 0) {
-                                //TODO: log a warning--unrecognized pref
-//                                throw new ParseException("Unrecognized preference: "+prop[0],1);
-                            } else if(prop.length > 2) {
-                                throw new ParseException("Found extra ':'", s.indexOf(':', s.indexOf(':')));
-                            } else {
-                                /*
-                                 * Here's how we will try to figure out the
-                                 * value type:
-                                 * 1. check for a recognized prefix (explicit
-                                 *    type declaration)
-                                 *   a. rg -RadialGradient
-                                 *   b. lg -LinearGradient
-                                 *   c. f  -Font
-                                 *   d. #  -Color
-                                 * 2. see if it's a double
-                                 * 3. any future types that get added
-                                 */
-                                if(prop[1].startsWith("rg") || prop[1].startsWith("lg")){
-                                    if(prop[0].endsWith("Paint") || prop[0].endsWith("Stroke"))
-                                        settings.put(prop[0], decodeGradient(prop[1]));
-                                    else
-                                        ; //warning
-                                    break; //exit this massively complicated switch statement
-                                } else if(prop[1].startsWith("#")) {
-                                    if(prop[0].endsWith("Paint") || prop[0].endsWith("Stroke"))
-                                        settings.put(prop[0], decodeColor(prop[1]));
-                                    else
-                                        ; //TODO: log a warning
-                                    break; //exit this massively complicated switch statement
-                                } else if(prop[1].startsWith("f")) {
-                                    if(prop[0].endsWith("Font"))
-                                        settings.put(prop[0], decodeFont(prop[1]));
-                                    else; //warning
-                                    break; //exit this massively complicated switch statement
-                                }
-                                try{ 
-                                        double val = Double.parseDouble(prop[1]);
-                                        settings.put(prop[0], val);
-                                        break;
-                                } catch(NumberFormatException e) {
-                                    throw new ParseException("Value '"+prop[1]+"' for property '"+prop[0]+"' does not correspond to any known types", 0);
-                                }
-                            }
-                        } else if(mode == dataMode) {
-                            s = s.replaceAll("\\s", "");
-                            if(s.startsWith("j")) {
-                                years.addData(decodeJog(s));
-                            } else if(s.startsWith("e")) {
-                                years.addData(decodeExercise(s));
-                            }
-                        } else {
-//                            System.out.println("Unrecognized line: '"+s+"', treating as comment");
-                        }
-                }
-                s = b.readLine();
+                
             }
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParseException ex) {
-            throw new ParseException("Error in line "+line+":"+ex.getMessage(), ex.getErrorOffset());
-        }
+        } 
     }
-    //</editor-fold>
-    
-    //</editor-fold>
     
 }
