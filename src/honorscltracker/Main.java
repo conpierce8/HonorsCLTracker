@@ -3,19 +3,17 @@ package honorscltracker;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javafx.application.Application;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
@@ -32,7 +30,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextBoundsType;
 import javafx.scene.web.HTMLEditor;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -89,21 +86,6 @@ public class Main extends Application {
     private File file;
     
     private double dragOffsetX = 0, dragOffsetY = 0, scrollStartY, translateStartY;
-    
-    private final String[] recognizedPrefs = new String[]{"datascreenBGPaint", 
-            "datascreenBGStroke", "datascreenButtonBGPaint", "datascreenButtonFGPaint", 
-            "datascreenButtonOutlinePaint", 
-            "datascreenWindowButtonBGPaint", "datascreenWindowButtonFGPaint", "homescreenBGPaint", 
-            "homescreenBGStroke", "homescreenTextFont", "homescreenTextPaint", 
-            "homescreenWindowButtonBGPaint", "homescreenWindowButtonFGPaint", "mainscreenBGPaint", 
-            "mainscreenBGStroke", "mainscreenButtonBGPaint", "mainscreenButtonFGPaint", 
-            "mainscreenButtonOutlinePaint", "mainscreenLabelFont", "mainscreenLabelPaint", 
-            "mainscreenWindowButtonBGPaint", "mainscreenWindowButtonFGPaint", "scrollbarBGPaint", 
-            "scrollbarFGPaint", "scrollbarFGStroke", "scrollbarWidth", 
-            "stageHeight", "stageWidth", "tableDataTextFont", 
-            "tableDataTextPaint", "tableHeaderBGPaint", "tableHeaderTextFont", 
-            "tableHeaderTextPaint", "tableRow1BGPaint", "tableRow2BGPaint", 
-    };
     //</editor-fold>
     
     public static void main(String[] args) {
@@ -112,10 +94,12 @@ public class Main extends Application {
     }
     
     public Main() {
-        Arrays.sort(recognizedPrefs);
-        
         GregorianCalendar c = new GregorianCalendar();
-        currentYear = c.get(Calendar.YEAR);
+        if(c.get(Calendar.MONTH) > 5) {
+            currentYear = c.get(Calendar.YEAR)-1;
+        } else {
+            currentYear = c.get(Calendar.YEAR);
+        }
     }
     
     @Override
@@ -173,9 +157,9 @@ public class Main extends Application {
         settings.put("mainscreenButtonFGPaint", Color.WHITE);
         settings.put("mainscreenButtonBGPaint", Color.TRANSPARENT);
         settings.put("mainscreenButtonOutlinePaint", Color.WHITE);
-        settings.put("datascreenButtonFGPaint", Color.BLACK);
+        settings.put("datascreenButtonFGPaint", Color.WHITE);
         settings.put("datascreenButtonBGPaint", Color.TRANSPARENT);
-        settings.put("datascreenButtonOutlinePaint", Color.BLACK);
+        settings.put("datascreenButtonOutlinePaint", Color.WHITE);
         settings.put("tableRow1BGPaint", new Color(1, 0.5, 0, 1));
         settings.put("tableRow2BGPaint", new Color(1, .639, .288, 1));
         settings.put("tableHeaderBGPaint", Color.TRANSPARENT);
@@ -188,20 +172,34 @@ public class Main extends Application {
     }
     
     private void getDataInputScreen() {
+        
         VBox v = new VBox();
+        v.setMaxWidth((Double) settings.get("stageWidth")-35);
         v.setSpacing(10);
         
         final ComboBox yearCombo = new ComboBox();
-        yearCombo.setEditable(true);
         yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years.getYearsList()));
-        HBox hb1 = new HBox(); hb1.getChildren().add(new Label("Year:"));
+        yearCombo.setEditable(true);
+        yearCombo.setPrefHeight(20);
+        yearCombo.setPrefWidth(75);
+        HBox hb1 = new HBox(); 
+        Label l1 = new Label("Year:");
+        l1.setStyle("-fx-text-fill:white;");
+        hb1.getChildren().add(l1);
         hb1.getChildren().add(yearCombo);
+        hb1.setAlignment(Pos.CENTER_LEFT);
+        hb1.setSpacing(5);
         v.getChildren().add(hb1);
         
         final TextField dateField = new TextField();
-        dateField.setPromptText("Enter date (MM/DD/YYYY)");
-        HBox hb2 = new HBox(); hb2.getChildren().add(new Label("Date:"));
+        dateField.setPromptText("Enter date (M/D/Y)");
+        HBox hb2 = new HBox();
+        Label l2 = new Label("Date:");
+        l2.setStyle("-fx-text-fill:white;");
+        hb2.getChildren().add(l2);
         hb2.getChildren().add(dateField);
+        hb2.setAlignment(Pos.CENTER_LEFT);
+        hb2.setSpacing(5);
         v.getChildren().add(hb2);
         
         final TextField contactNameField = new TextField();
@@ -209,30 +207,45 @@ public class Main extends Application {
         final TextField contactEmailField = new TextField();
         contactEmailField.setPromptText("Contact email:");
         final TextField contactPhoneField = new TextField();
-        contactEmailField.setPromptText("Contact phone:");
+        contactPhoneField.setPromptText("Contact phone:");
         HBox hb3 = new HBox();
-        hb3.getChildren().add(new Label("Contact:"));
+        Label l3 = new Label("Contact:");
+        l3.setStyle("-fx-text-fill:white;");
+        hb3.getChildren().add(l3);
         VBox contact = new VBox();
+        contact.setSpacing(3);
         contact.getChildren().add(contactNameField);
         contact.getChildren().add(contactEmailField);
         contact.getChildren().add(contactPhoneField);
         hb3.getChildren().add(contact);
+        hb3.setAlignment(Pos.CENTER_LEFT);
+        hb3.setSpacing(5);
         v.getChildren().add(hb3);
         
         final TextField shortDescField = new TextField();
         shortDescField.setPromptText("Organization, e.g.");
         HBox hb4 = new HBox();
-        hb4.getChildren().add(new Label("Enter a short description: "));
+        Label l4 = new Label("Enter a short description:");
+        l4.setStyle("-fx-text-fill:white;");
+        hb4.getChildren().add(l4);
         hb4.getChildren().add(shortDescField);
+        hb4.setAlignment(Pos.CENTER_LEFT);
+        hb4.setSpacing(5);
         v.getChildren().add(hb4);
         
         final TextField hoursField = new TextField();
         hoursField.setPromptText("Sets");
         HBox hb5 = new HBox();
-        hb5.getChildren().add(new Label("Hours:"));
+        Label l5 = new Label("Hours:");
+        l5.setStyle("-fx-text-fill:white;");
+        hb5.getChildren().add(l5);
         hb5.getChildren().add(hoursField);
+        hb5.setAlignment(Pos.CENTER_LEFT);
+        hb5.setSpacing(5);
+        v.getChildren().add(hb5);
         
         final HTMLEditor detailsField = new HTMLEditor();
+        detailsField.setPrefHeight(200);
         v.getChildren().add(detailsField);
         
         Button addActivity = new Button("Add Comp Learning Event");
@@ -267,11 +280,19 @@ public class Main extends Application {
                 j.setHours(hours);
                 if(startYr > -1) {
                     //go for it
+                    if(years.indexOf(startYr) < 0) {
+                        years.add(new Year(startYr));
+                    }
                     years.get(years.indexOf(startYr)).addCLActivity(j);
                 }
             }
         });
         v.getChildren().add(addActivity);
+        
+        ScrollPane scrollpane = new ScrollPane();
+        scrollpane.setStyle("-fx-background-color: none;");
+        scrollpane.setPrefSize((Double) settings.get("stageWidth")-20,(Double) settings.get("stageHeight")-40);
+        scrollpane.setContent(v);
         
         Group backButton = new Group();
         Rectangle r = new Rectangle(0,0,30,7);
@@ -297,6 +318,7 @@ public class Main extends Application {
         backButton.setLayoutY((Double) settings.get("stageHeight") - 34);
         
         dataScreen = new Group();
+        dataScreen.getChildren().add(scrollpane);
         dataScreen.getChildren().add(backButton);
         //TODO: data screen
     }
