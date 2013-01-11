@@ -148,7 +148,7 @@ public class Main extends Application {
         settings.put("mainscreenWindowButtonFGPaint", new Color(1,.5,0,1));
         settings.put("homescreenWindowButtonFGPaint", new Color(1,.5,0,1));
         settings.put("datascreenWindowButtonFGPaint", new Color(1,.5,0,1));
-        settings.put("detailscreenWindowButtonFGPaint", Color.DARKGRAY);
+        settings.put("detailscreenWindowButtonFGPaint", Color.BLACK);
         settings.put("mainscreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("homescreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("datascreenWindowButtonBGPaint", Color.TRANSPARENT);
@@ -542,7 +542,7 @@ public class Main extends Application {
         
         //create close button
         Group closeButton = new Group();
-        Rectangle box = new Rectangle(10,10);
+        Rectangle box = new Rectangle(11,11);
         box.fillProperty().bind(windowButtonBG);
         closeButton.getChildren().add(box);
         Line slash1 = new Line(0,0,10,10);
@@ -567,7 +567,7 @@ public class Main extends Application {
         
         //create minimize button
         Group minimizeButton = new Group();
-        Rectangle box2 = new Rectangle(10,10);
+        Rectangle box2 = new Rectangle(11,11);
         box2.fillProperty().bind(windowButtonBG);
         minimizeButton.getChildren().add(box2);
         Line line = new Line(0,10,10,10);
@@ -893,17 +893,18 @@ public class Main extends Application {
     private void getDetailScreen(CLActivity c) {
         detailScreen = new Group();
         String document = "<html><head><style>"
-                + "h1.organization{font:16pt bold;font-fill:black;}";
-        document += "div.contact-name{font:12pt Sans-Serif italic;}";
-        document += "div.contact-phone{font:11pt Sans-Serif;}";
-        document += "div.contact-email{font:11pt monospace;}";
-        document += "p{font:10pt}</style></head>";
+                + "h1.organization{font:18pt bold;font-family:sans-serif;}";
+        document += "span.contact-name{font:14pt italic;font-family:sans-serif;}";
+        document += "span.label{font:10pt;font-family:sans-serif;}";
+        document += "span.contact-phone{font:11pt font-family:sans-serif;}";
+        document += "span.contact-email{font:11pt; font-family: monospace;}";
+        document += "p.default{font:10pt;}</style></head>";
         document += "<body><h1 class='organization'>"+c.getDesc()+"</h1>";
-        document += "<div class='contact-name'>Contact Name:"+c.getContact().getName()+"</div>";
-        document += "<div class='contact-email'>Email:"+c.getContact().getEmail()+"</div>";
-        document += "<div class='contact-phone'>Phone:"+c.getContact().getPhone()+"</div>";
-        document += "<p>Date: "+format.format(c.getDate().getTime())+"</p>";
-        document += "<p>Hours: "+c.getHours()+"</p>";
+        document += "<span class='label'>Contact Name:</span><span class='contact-name'>"+c.getContact().getName()+"</span><br/>";
+        document += "<span class='label'>Email:</span><span class='contact-email'>"+c.getContact().getEmail()+"</span><br/>";
+        document += "<span class='label'>Phone:</span><span class='contact-phone'>"+c.getContact().getPhone()+"</span><br/>";
+        document += "<p class='default'>Date: "+format.format(c.getDate().getTime())+"</p>";
+        document += "<p class='default'>Hours: "+c.getHours()+"</p>";
         document += c.getDetails()+"</body></html>";
         javafx.scene.web.WebView view = new javafx.scene.web.WebView();
         view.setMaxSize((Double) settings.get("stageWidth")-20, (Double) settings.get("stageHeight")-35);
