@@ -257,6 +257,9 @@ public class Main extends Application {
                 String contactName = contactNameField.getText();
                 String contactEmail = contactEmailField.getText();
                 String contactPhone = contactPhoneField.getText();
+                System.out.println("yearCombo = "+yearCombo);
+                if(yearCombo != null)
+                    System.out.println("val = "+yearCombo.getValue());
                 String year = yearCombo.getValue().toString();
                 String shortDesc = shortDescField.getText();
                 String details = detailsField.getHtmlText();
@@ -290,7 +293,7 @@ public class Main extends Application {
         v.getChildren().add(addActivity);
         
         ScrollPane scrollpane = new ScrollPane();
-        scrollpane.setStyle("-fx-background-color: none;");
+        scrollpane.setStyle("-fx-background-color: rgb(0,0,0,0);");
         scrollpane.setPrefSize((Double) settings.get("stageWidth")-20,(Double) settings.get("stageHeight")-40);
         scrollpane.setContent(v);
         
@@ -443,7 +446,9 @@ public class Main extends Application {
 
             @Override
             public void handle(MouseEvent arg0) {
-                getDataInputScreen();
+                if(dataScreen == null) {
+                    getDataInputScreen();
+                }
                 dataScreen.setLayoutX(10);
                 dataScreen.setLayoutY(25);
                 root.getChildren().remove(mainScreen);
