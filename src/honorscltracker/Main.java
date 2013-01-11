@@ -92,6 +92,7 @@ public class Main extends Application {
         //load last configuration
         launch(args);
     }
+    private Group detailScreen;
     
     public Main() {
         GregorianCalendar c = new GregorianCalendar();
@@ -142,12 +143,16 @@ public class Main extends Application {
         settings.put("mainscreenBGStroke", Color.BLACK);
         settings.put("datascreenBGPaint", new Color(.1, .1, .1, .8));
         settings.put("datascreenBGStroke", Color.TRANSPARENT);
+        settings.put("detailscreenBGPaint", Color.ORANGE);
+        settings.put("detailscreenBGStroke", Color.BLACK);
         settings.put("mainscreenWindowButtonFGPaint", new Color(1,.5,0,1));
         settings.put("homescreenWindowButtonFGPaint", new Color(1,.5,0,1));
         settings.put("datascreenWindowButtonFGPaint", new Color(1,.5,0,1));
+        settings.put("detailscreenWindowButtonFGPaint", Color.DARKGRAY);
         settings.put("mainscreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("homescreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("datascreenWindowButtonBGPaint", Color.TRANSPARENT);
+        settings.put("detailscreenWindowButtonBGPaint", Color.LIGHTGRAY);
         settings.put("mainscreenLabelPaint", Color.WHITE);
         settings.put("mainscreenLabelFont", new Font("Arial", 30));
         settings.put("tableDataTextPaint", Color.BLACK);
@@ -160,6 +165,9 @@ public class Main extends Application {
         settings.put("datascreenButtonFGPaint", Color.WHITE);
         settings.put("datascreenButtonBGPaint", Color.TRANSPARENT);
         settings.put("datascreenButtonOutlinePaint", Color.WHITE);
+        settings.put("detailscreenButtonFGPaint", Color.BLACK);
+        settings.put("detailscreenButtonBGPaint", Color.WHITE);
+        settings.put("detailscreenButtonOutlinePaint", Color.BLACK);
         settings.put("tableRow1BGPaint", new Color(1, 0.5, 0, 1));
         settings.put("tableRow2BGPaint", new Color(1, .639, .288, 1));
         settings.put("tableHeaderBGPaint", Color.TRANSPARENT);
@@ -172,7 +180,6 @@ public class Main extends Application {
     }
     
     private void getDataInputScreen() {
-        
         VBox v = new VBox();
         v.setMaxWidth((Double) settings.get("stageWidth")-35);
         v.setSpacing(10);
@@ -180,15 +187,16 @@ public class Main extends Application {
         final ComboBox yearCombo = new ComboBox();
         yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years.getYearsList()));
         yearCombo.setEditable(true);
-        yearCombo.setPrefHeight(20);
-        yearCombo.setPrefWidth(75);
+        yearCombo.setPrefHeight(25);
+        yearCombo.setPrefWidth(100);
         HBox hb1 = new HBox(); 
+        hb1.setAlignment(Pos.CENTER_LEFT);
+        hb1.setSpacing(5);
+        hb1.setFillHeight(false);
         Label l1 = new Label("Year:");
         l1.setStyle("-fx-text-fill:white;");
         hb1.getChildren().add(l1);
         hb1.getChildren().add(yearCombo);
-        hb1.setAlignment(Pos.CENTER_LEFT);
-        hb1.setSpacing(5);
         v.getChildren().add(hb1);
         
         final TextField dateField = new TextField();
@@ -234,7 +242,7 @@ public class Main extends Application {
         v.getChildren().add(hb4);
         
         final TextField hoursField = new TextField();
-        hoursField.setPromptText("Sets");
+        hoursField.setPromptText("Hours");
         HBox hb5 = new HBox();
         Label l5 = new Label("Hours:");
         l5.setStyle("-fx-text-fill:white;");
@@ -257,12 +265,10 @@ public class Main extends Application {
                 String contactName = contactNameField.getText();
                 String contactEmail = contactEmailField.getText();
                 String contactPhone = contactPhoneField.getText();
-                System.out.println("yearCombo = "+yearCombo);
-                if(yearCombo != null)
-                    System.out.println("val = "+yearCombo.getValue());
                 String year = yearCombo.getValue().toString();
                 String shortDesc = shortDescField.getText();
                 String details = detailsField.getHtmlText();
+                details = details.substring(details.indexOf("<head"));
                 double hours = 0;
                 int startYr = -1;
                 try {
@@ -663,8 +669,13 @@ public class Main extends Application {
         if(yearIdx >= 0) {
             yr = years.get(yearIdx);
         }
-        Object[][] data = new Object[4][yr.getSize()];
+        
+        final Object[][] data = new Object[4][yr.getSize()];
         int row = 0;
+        Group dataRows = new Group();
+        Text asdf = new Text("T");
+        asdf.setFont((Font) settings.get("tableDataTextFont"));
+        double rowHeight = asdf.getBoundsInParent().getHeight() + 4;
         for(String s : yr.getAllDescs()) {
             int count = 0;
             for(CLActivity c : yr.getCLActivities(s)) {
@@ -674,14 +685,11 @@ public class Main extends Application {
                 data[1][row] = format.format(c.getDate().getTime());
                 data[2][row] = c.getContact().getName();
                 data[3][row] = c.getHours();
+                dataRows.getChildren().add(getTableRowRect(row,rowHeight, c));
                 count ++;
                 row ++;
             }
         }
-        
-        Text asdf = new Text("T");
-        asdf.setFont((Font) settings.get("tableDataTextFont"));
-        double rowHeight = asdf.getBoundsInParent().getHeight() + 4;
         
         final double stageWidth = (Double) settings.get("stageWidth");
         
@@ -724,25 +732,25 @@ public class Main extends Application {
                 c1Head.getBoundsInParent().getWidth())+10;
         c1Head.setTextOrigin(VPos.CENTER);
         
-        c1Head.setLayoutX(5); c1Head.setLayoutY(headerRowHeight / 2);
-        tempTable.getChildren().add(c1Head);
-        c2Head.setLayoutX(c1Width+5); c2Head.setLayoutY(headerRowHeight / 2);
-        tempTable.getChildren().add(c2Head);
-        c3Head.setLayoutX(c1Width+c2Width+5); c3Head.setLayoutY(headerRowHeight / 2);
-        tempTable.getChildren().add(c3Head);
-        c4Head.setLayoutX(c1Width+c2Width+c3Width+5); c4Head.setLayoutY(headerRowHeight / 2);
-        tempTable.getChildren().add(c4Head);
-        
-        double y = 0;
-        Group dataRows = new Group();
-        for(int i = 0; i < yr.getSize(); i++) {
-            dataRows.getChildren().add(getTableRowRect(i, y, rowHeight));
+        if(row > 0) {
+            c1Head.setLayoutX(10);
+            c1Head.setLayoutY(headerRowHeight / 2);
+            tempTable.getChildren().add(c1Head);
+            c2Head.setLayoutX(c1Width+10);
+            c2Head.setLayoutY(headerRowHeight / 2);
+            tempTable.getChildren().add(c2Head);
+            c3Head.setLayoutX(c1Width+c2Width+10);
+            c3Head.setLayoutY(headerRowHeight / 2);
+            tempTable.getChildren().add(c3Head);
+            c4Head.setLayoutX(c1Width+c2Width+c3Width+10);
+            c4Head.setLayoutY(headerRowHeight / 2);
+            tempTable.getChildren().add(c4Head);
         }
         
-        c1.setLayoutX(5);
-        c2.setLayoutX(c1Width+5);
-        c3.setLayoutX(c1Width+c2Width+5);
-        c4.setLayoutX(c1Width+c2Width+c3Width+5);
+        c1.setLayoutX(10);
+        c2.setLayoutX(c1Width+10);
+        c3.setLayoutX(c1Width+c2Width+10);
+        c4.setLayoutX(c1Width+c2Width+c3Width+10);
         dataRows.getChildren().add(c1);
         dataRows.getChildren().add(c2);
         dataRows.getChildren().add(c3);
@@ -765,12 +773,11 @@ public class Main extends Application {
         
         double y = 0;
         for(Object o : data) {
-            Text rowData = new Text(o.toString());
+            Text rowData = new Text((o==null)?"":o.toString());
             rowData.setTextOrigin(VPos.CENTER);
             rowData.setFont((Font) settings.get("tableDataTextFont"));
             rowData.setFill((Paint) settings.get("tableDataTextPaint"));
             rowData.setLayoutY(y+rowHeight/2);
-            rowData.setLayoutX(5);
             double dataWidth = rowData.getBoundsInParent().getWidth();
             if(maxWidth > 0 && dataWidth > maxWidth - 4) {
                 double percent = (maxWidth < 4) ? 0 : ((maxWidth - 4) / dataWidth);
@@ -859,7 +866,7 @@ public class Main extends Application {
         return group;
     }
     
-    private Rectangle getTableRowRect(int row, double y, double dataRowHeight) {
+    private Rectangle getTableRowRect(int row, double dataRowHeight, final CLActivity c) {
         Rectangle r = new Rectangle();
         r.setWidth((Double) settings.get("stageWidth") - 20 - (Double) settings.get("scrollbarWidth"));
         r.setHeight(dataRowHeight);
@@ -868,8 +875,67 @@ public class Main extends Application {
         r.setFill( (row%2==0)
                 ?(Paint) settings.get("tableRow1BGPaint")
                 :(Paint) settings.get("tableRow2BGPaint") );
-        r.setLayoutX(0); r.setLayoutY(y);
+        r.setLayoutX(0); r.setLayoutY(row*dataRowHeight);
+        r.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent event) {
+                currState = "detailscreen";
+                getDetailScreen(c);
+                root.getChildren().remove(mainScreen);
+                root.getChildren().add(detailScreen);
+                updateWindowGraphics();
+            }
+        });
         return r;
+    }
+    
+    private void getDetailScreen(CLActivity c) {
+        detailScreen = new Group();
+        String document = "<html><head><style>"
+                + "h1.organization{font:16pt bold;font-fill:black;}";
+        document += "div.contact-name{font:12pt Sans-Serif italic;}";
+        document += "div.contact-phone{font:11pt Sans-Serif;}";
+        document += "div.contact-email{font:11pt monospace;}";
+        document += "p{font:10pt}</style></head>";
+        document += "<body><h1 class='organization'>"+c.getDesc()+"</h1>";
+        document += "<div class='contact-name'>Contact Name:"+c.getContact().getName()+"</div>";
+        document += "<div class='contact-email'>Email:"+c.getContact().getEmail()+"</div>";
+        document += "<div class='contact-phone'>Phone:"+c.getContact().getPhone()+"</div>";
+        document += "<p>Date: "+format.format(c.getDate().getTime())+"</p>";
+        document += "<p>Hours: "+c.getHours()+"</p>";
+        document += c.getDetails()+"</body></html>";
+        javafx.scene.web.WebView view = new javafx.scene.web.WebView();
+        view.setMaxSize((Double) settings.get("stageWidth")-20, (Double) settings.get("stageHeight")-35);
+        view.setLayoutX(10);
+        view.setLayoutY(25);
+        javafx.scene.web.WebEngine eng = view.getEngine();
+        eng.loadContent(document);
+        detailScreen.getChildren().add(view);
+        
+        Group backButton = new Group();
+        Rectangle backButtonBg = new Rectangle(6, 30);
+        backButtonBg.setStroke((Paint) settings.get("detailscreenButtonOutlinePaint"));
+        backButtonBg.setFill((Paint) settings.get("detailscreenButtonBGPaint"));
+        backButton.getChildren().add(backButtonBg);
+        Polygon homeButtonFg = new Polygon();
+        homeButtonFg.getPoints().addAll(0.0,2.0,3.0,0.0,3.0,4.0);
+        homeButtonFg.setFill((Paint) settings.get("detailscreenButtonFGPaint"));
+        homeButtonFg.setLayoutX(1.5); homeButtonFg.setLayoutY(13);
+        backButton.getChildren().add(homeButtonFg);
+        backButton.setLayoutX(2.5);
+        backButton.setLayoutY(((Double) settings.get("stageHeight") - 35)/2-15);
+        backButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent arg0) {
+                root.getChildren().remove(detailScreen);
+                root.getChildren().add(mainScreen);
+                currState = "mainscreen";
+                updateWindowGraphics();
+            }
+        });
+        detailScreen.getChildren().add(backButton);
     }
     
     private void writeToFile (File f) {
