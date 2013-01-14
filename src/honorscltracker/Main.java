@@ -268,7 +268,8 @@ public class Main extends Application {
                 String year = yearCombo.getValue().toString();
                 String shortDesc = shortDescField.getText();
                 String details = detailsField.getHtmlText();
-                details = details.substring(details.indexOf("<head"));
+                details = details.substring(details.indexOf("<body"));
+                details = details.substring(details.indexOf('>')+1, details.indexOf("</body"));
                 double hours = 0;
                 int startYr = -1;
                 try {
@@ -370,7 +371,8 @@ public class Main extends Application {
                 try {
                     openExistingFile(file);
                 } catch (ParseException ex) {
-                    f.setText("Could not read file: "+file);
+                    f.setText("Could not read file: "+file+"; "+ex.getMessage());
+                    f.setAlignment(Pos.CENTER);
                 }
             }
         });
@@ -545,10 +547,10 @@ public class Main extends Application {
         Rectangle box = new Rectangle(11,11);
         box.fillProperty().bind(windowButtonBG);
         closeButton.getChildren().add(box);
-        Line slash1 = new Line(0,0,10,10);
+        Line slash1 = new Line(1,1,10,10);
         slash1.strokeProperty().bind(windowButtonFG);
         closeButton.getChildren().add(slash1);
-        Line slash2 = new Line(0,10,10,0);
+        Line slash2 = new Line(1,10,10,1);
         slash2.strokeProperty().bind(windowButtonFG);
         closeButton.getChildren().add(slash2);
         closeButton.setLayoutX(w-30);
@@ -895,17 +897,25 @@ public class Main extends Application {
         String document = "<html><head><style>"
                 + "h1.organization{font:18pt bold;font-family:sans-serif;}";
         document += "span.contact-name{font:14pt italic;font-family:sans-serif;}";
-        document += "span.label{font:10pt;font-family:sans-serif;}";
+        document += "span.label{font:10pt;font-family:sans-serif;";
         document += "span.contact-phone{font:11pt font-family:sans-serif;}";
         document += "span.contact-email{font:11pt; font-family: monospace;}";
-        document += "p.default{font:10pt;}</style></head>";
+        document += "p.default{font:10pt;}table.noborders{border:0px;}";
+        document += "td.spaced{padding:10px;height:25px;}";
+        document += "</style></head>";
         document += "<body><h1 class='organization'>"+c.getDesc()+"</h1>";
-        document += "<span class='label'>Contact Name:</span><span class='contact-name'>"+c.getContact().getName()+"</span><br/>";
-        document += "<span class='label'>Email:</span><span class='contact-email'>"+c.getContact().getEmail()+"</span><br/>";
-        document += "<span class='label'>Phone:</span><span class='contact-phone'>"+c.getContact().getPhone()+"</span><br/>";
+        document += "<table class='noborders'>";
+        document += "<tr><td class='spaced'><span class='label'>Contact Name: </span></td>"
+                + "<td class='spaced'><span class='contact-name'>"+c.getContact().getName()+"</span></td></tr>";
+        document += "<tr><td class='spaced'><span class='label'>Email: </span></td>"
+                + "<td class='spaced'><span class='contact-email'>"+c.getContact().getEmail()+"</span></td></tr>";
+        document += "<tr><td class='spaced'><span class='label'>Phone: </span></td>"
+                + "<td class='spaced'><span class='contact-phone'>"+c.getContact().getPhone()+"</span></td></tr>";
+        document += "</table>";
         document += "<p class='default'>Date: "+format.format(c.getDate().getTime())+"</p>";
         document += "<p class='default'>Hours: "+c.getHours()+"</p>";
         document += c.getDetails()+"</body></html>";
+        System.out.println(document);
         javafx.scene.web.WebView view = new javafx.scene.web.WebView();
         view.setMaxSize((Double) settings.get("stageWidth")-20, (Double) settings.get("stageHeight")-35);
         view.setLayoutX(10);
@@ -948,9 +958,12 @@ public class Main extends Application {
                         line += "desc="+d+"\n";
                         line += "date="+format.format(j.getDate().getTime())+"\n";
                         Contact c = j.getContact();
-                        line += "contact=["+c.getName()+","+c.getEmail()+","+c.getPhone()+"]\n";
+                        line += "contactname="+c.getName()+"\n";
+                        line += "contactemail="+c.getEmail()+"\n";
+                        line += "contactphone="+c.getPhone()+"\n";
                         line += "hours="+j.getHours()+"\n";
-                        line += j.getDetails()+"\n~/Activity~\n";
+                        line += "~~Details~~\n";
+                        line += j.getDetails()+"\n~~/Details~~\n~/Activity~";
                         p.println(line);
                         p.println();
                     }
@@ -962,13 +975,67 @@ public class Main extends Application {
     }
     
     private void loadFromFile(File file) throws ParseException {
-        int line = 0;
+        int lineNum = 0;
         try {
             java.io.BufferedReader b = new java.io.BufferedReader(new java.io.FileReader(file));
             String s = b.readLine();
+            CLActivity a = null;
+            boolean parsingAct = false, parsingDetails = false;
+            int complete = 0;
+            Contact c = null;
+            String details = null;
             while(s != null) {
-                line ++;
-                
+                lineNum ++;
+                if(s.equals("~Activity~") && !parsingAct) {
+                    parsingAct = true;
+                    a = new CLActivity();
+                    c = new Contact();
+                    details = "";
+                } else if(s.startsWith("desc=") && parsingAct) {
+                    a.setDesc(s.substring(s.indexOf('=')+1));
+                    complete += 1;
+                } else if(s.startsWith("date=") && parsingAct) {
+                    String date = s.substring(s.indexOf('=')+1);
+                    GregorianCalendar g = new GregorianCalendar();
+                    g.setTime(format.parse(date));
+                    a.setDate(g);
+                    complete += 1<<1;
+                } else if(s.startsWith("contactname=") && parsingAct) {
+                    c.setName(s.substring(s.indexOf('=')+1));
+                    complete += 1<<2;
+                } else if(s.startsWith("contactemail=") && parsingAct) {
+                    c.setEmail(s.substring(s.indexOf('=')+1));
+                    complete += 1<<3;
+                } else if(s.startsWith("contactphone=") && parsingAct) {
+                    c.setPhone(s.substring(s.indexOf('=')+1));
+                    complete += 1<<4;
+                } else if(s.startsWith("hours=") && parsingAct) {
+                    a.setHours(Double.parseDouble(s.substring(s.indexOf('=')+1)));
+                    complete += 1<<5;
+                } else if(s.equals("~~Details~~") && parsingAct) {
+                    parsingDetails = true;
+                } else if(parsingDetails) {
+                    if(!s.equals("~~/Details~~")) {
+                        details += s + "\n";
+                    } else {
+                        parsingDetails = false;
+                        a.setDetails(details);
+                        complete += 1<<6;
+                    }
+                } else if(parsingAct && s.equals("~/Activity~")) {
+                    if(complete == (1<<7) - 1) {
+                        a.setContact(c);
+                        years.addData(a);
+                        parsingAct = false;
+                    } else {
+                        throw new ParseException("Incomplete CL activity at line "+lineNum,0);
+                    }
+                } else if(s.equals("")){
+                    
+                } else {
+                    throw new ParseException("Invalid syntax at line "+lineNum, 0);
+                }
+                s = b.readLine();
             }
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
