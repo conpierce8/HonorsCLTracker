@@ -35,6 +35,11 @@ public class DataScreen extends Group {
     
     private Handler newActivityHandler, updateActivityHandler, mainRequestedHandler;
     
+    private ComboBox yearCombo;
+    private TextField dateField, contactNameField, contactEmailField,
+            contactPhoneField, shortDescField, hoursField;
+    private HTMLEditor detailsField;
+    
     public DataScreen(HashMap<String, Object> prefs, YearList years) {
         // By default, we're not editing anything an activity; we're creating
         // a new one (i.e. 'owner' is null)
@@ -48,7 +53,7 @@ public class DataScreen extends Group {
         v.setMaxWidth((Double) settings.get("stageWidth")-35);
         v.setSpacing(10);
         
-        final ComboBox yearCombo = new ComboBox();
+        yearCombo = new ComboBox();
         yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years.getYearsList()));
         yearCombo.setEditable(true);
         yearCombo.setPrefHeight(25);
@@ -63,7 +68,7 @@ public class DataScreen extends Group {
         hb1.getChildren().add(yearCombo);
         v.getChildren().add(hb1);
         
-        final TextField dateField = new TextField();
+        dateField = new TextField();
         dateField.setPromptText("Enter date (M/D/Y)");
         HBox hb2 = new HBox();
         Label l2 = new Label("Date:");
@@ -74,11 +79,11 @@ public class DataScreen extends Group {
         hb2.setSpacing(5);
         v.getChildren().add(hb2);
         
-        final TextField contactNameField = new TextField();
+        contactNameField = new TextField();
         contactNameField.setPromptText("Enter contact name:");
-        final TextField contactEmailField = new TextField();
+        contactEmailField = new TextField();
         contactEmailField.setPromptText("Contact email:");
-        final TextField contactPhoneField = new TextField();
+        contactPhoneField = new TextField();
         contactPhoneField.setPromptText("Contact phone:");
         HBox hb3 = new HBox();
         Label l3 = new Label("Contact:");
@@ -94,7 +99,7 @@ public class DataScreen extends Group {
         hb3.setSpacing(5);
         v.getChildren().add(hb3);
         
-        final TextField shortDescField = new TextField();
+        shortDescField = new TextField();
         shortDescField.setPromptText("Organization, e.g.");
         HBox hb4 = new HBox();
         Label l4 = new Label("Enter a short description:");
@@ -105,7 +110,7 @@ public class DataScreen extends Group {
         hb4.setSpacing(5);
         v.getChildren().add(hb4);
         
-        final TextField hoursField = new TextField();
+        hoursField = new TextField();
         hoursField.setPromptText("Hours");
         HBox hb5 = new HBox();
         Label l5 = new Label("Hours:");
@@ -116,7 +121,7 @@ public class DataScreen extends Group {
         hb5.setSpacing(5);
         v.getChildren().add(hb5);
         
-        final HTMLEditor detailsField = new HTMLEditor();
+        detailsField = new HTMLEditor();
         detailsField.setPrefHeight(200);
         v.getChildren().add(detailsField);
         
@@ -134,8 +139,8 @@ public class DataScreen extends Group {
                 String details = detailsField.getHtmlText();
                 details = details.substring(details.indexOf("<body"));
                 details = details.substring(details.indexOf('>')+1, details.indexOf("</body"));
-                double hours = 0;
-                int startYr = -1;
+                double hours;
+                int startYr;
                 try {
                     hours = Double.parseDouble(hoursField.getText());
                 } catch(NumberFormatException ex) {
@@ -163,6 +168,7 @@ public class DataScreen extends Group {
                     } else {
                         updateActivityHandler.action(j);
                     }
+                    owner = null;
                 }
             }
         });
@@ -208,6 +214,19 @@ public class DataScreen extends Group {
     
     public void setMainScreenRequestHandler(Handler h) {
         mainRequestedHandler = h;
+    }
+    
+    public void setOwner(CLActivity owner) {
+        yearCombo.setValue(owner.getYearString());
+        dateField.setText(Main.format.format(owner.getDate().getTime()));
+        contactNameField.setText(owner.getContact().getName());
+        contactEmailField.setText(owner.getContact().getEmail());
+        contactPhoneField.setText(owner.getContact().getPhone());
+        shortDescField.setText(owner.getDesc());
+        hoursField.setText(owner.getHours()+"");
+        detailsField.setHtmlText("<html><head></head><body>"+owner.getDetails()+
+                "</body></html>");
+        this.owner = owner;
     }
     
 }

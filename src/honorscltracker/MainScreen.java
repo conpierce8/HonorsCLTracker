@@ -30,12 +30,12 @@ public class MainScreen extends Group {
     private Handler homescreenRequest, datascreenRequest, detailRequest,
             prevYearRequest, nextYearRequest, saveRequest;
     private double tableY, scrollStartY;
-    private SimpleDateFormat format = new SimpleDateFormat("M/D/YYYY");
     
     public MainScreen(HashMap<String, Object> settings, String title) {
         this.settings = settings;
         this.title = new Text(title);
         this.title.setFont((Font) this.settings.get("mainscreenLabelFont"));
+        init();
     }
     
     public void setTitle(String title) {
@@ -192,7 +192,7 @@ public class MainScreen extends Group {
                 if(count == 0) {
                     tableData[0][row] = s;
                 }
-                tableData[1][row] = format.format(c.getDate().getTime());
+                tableData[1][row] = Main.format.format(c.getDate().getTime());
                 tableData[2][row] = c.getContact().getName();
                 tableData[3][row] = c.getHours();
                 dataRows.getChildren().add(getTableRowRect(row,rowHeight, c));

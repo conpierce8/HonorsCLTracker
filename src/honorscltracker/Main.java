@@ -3,6 +3,7 @@ package honorscltracker;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -64,7 +65,7 @@ import javafx.stage.StageStyle;
 public class Main extends Application {
     //<editor-fold defaultstate="collapsed" desc=" Vars ">
     private HashMap<String, Object> settings = new HashMap<>();
-    private java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("M/d/yyyy");
+    public static SimpleDateFormat format = new SimpleDateFormat("M/d/yyyy");
     
     private int currentYear;
     private YearList years = new YearList();

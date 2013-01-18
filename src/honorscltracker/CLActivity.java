@@ -41,6 +41,15 @@ public class CLActivity implements Comparable<CLActivity> {
     public void setStartYr(int startYr) {
         this.startYr = startYr;
     }
+    
+    public String getYearString() {
+        String s = startYr + "-";
+        if((startYr + 1) % 100 < 10) {
+            s += "0";
+        } 
+        s += ((startYr + 1) % 100);
+        return s;
+    }
 
     /**
      * Set the value of date
