@@ -21,6 +21,26 @@ public class CLActivity implements Comparable<CLActivity> {
     public GregorianCalendar getDate() {
         return date;
     }
+    
+    private int startYr;
+
+    /**
+     * Get the value of startYr
+     *
+     * @return the value of startYr
+     */
+    public int getStartYr() {
+        return startYr;
+    }
+
+    /**
+     * Set the value of startYr
+     *
+     * @param startYr new value of startYr
+     */
+    public void setStartYr(int startYr) {
+        this.startYr = startYr;
+    }
 
     /**
      * Set the value of date
