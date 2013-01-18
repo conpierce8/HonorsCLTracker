@@ -3,7 +3,6 @@ package honorscltracker;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -13,7 +12,6 @@ import javafx.application.Application;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
@@ -1027,6 +1025,9 @@ public class Main extends Application {
                         a.setContact(c);
                         years.addData(a);
                         parsingAct = false;
+                        complete = 0;
+                        a = null;
+                        c = null;
                     } else {
                         throw new ParseException("Incomplete CL activity at line "+lineNum,0);
                     }
