@@ -4,6 +4,7 @@
  */
 package honorscltracker;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -19,9 +20,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.scene.web.HTMLEditor;
 
 /**
@@ -38,6 +41,7 @@ public class DataScreen extends Group {
     private ComboBox yearCombo;
     private TextField dateField, contactNameField, contactEmailField,
             contactPhoneField, shortDescField, hoursField;
+    private Text message;
     private HTMLEditor detailsField;
     
     public DataScreen(HashMap<String, Object> prefs, YearList years) {
@@ -125,17 +129,37 @@ public class DataScreen extends Group {
         detailsField.setPrefHeight(200);
         v.getChildren().add(detailsField);
         
+        message = new Text("");
+        message.setFont(new javafx.scene.text.Font(16));
+        v.getChildren().add(message);
+        
         Button addActivity = new Button("Add Comp Learning Event");
         addActivity.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent arg0) {
+                ArrayList<String> missingFields = new ArrayList<>();
                 GregorianCalendar d = new GregorianCalendar();
                 String contactName = contactNameField.getText();
+                if(contactName == null) {
+                    contactName = "";
+                }
                 String contactEmail = contactEmailField.getText();
+                if(contactEmail == null) {
+                    contactEmail = "";
+                }
                 String contactPhone = contactPhoneField.getText();
+                if(contactPhone == null) {
+                    contactPhone = "";
+                }
                 String year = yearCombo.getValue().toString();
+                if(year == null) {
+                    missingFields.add("year");
+                }
                 String shortDesc = shortDescField.getText();
+                if(shortDesc == null) {
+                    shortDesc = "";
+                }
                 String details = detailsField.getHtmlText();
                 details = details.substring(details.indexOf("<body"));
                 details = details.substring(details.indexOf('>')+1, details.indexOf("</body"));
@@ -147,9 +171,25 @@ public class DataScreen extends Group {
                     hours = 0;
                 }
                 try{
-                    startYr = Integer.parseInt(year.substring(0, 4));
+                    startYr = Integer.parseInt(year.substring(0, year.indexOf('-')));
                 } catch(NumberFormatException ex) {
                     startYr = -1;
+                    missingFields.add("academic year");
+                }
+                try {
+                    d.setTime(Main.format.parse(dateField.getText()));
+                } catch(ParseException ex) {
+                    missingFields.add("date");
+                }
+                if(missingFields.size() > 0) {
+                    String error = "The following fields are required:";
+                    for(String s: missingFields) {
+                        error += " "+s+",";
+                    }
+                    error = error.substring(0, error.length()-1);
+                    message.setFill(Color.RED);
+                    message.setText(error);
+                    return;
                 }
                 CLActivity j = (owner == null)? new CLActivity() : owner;
                 Contact c = new Contact();
@@ -170,6 +210,8 @@ public class DataScreen extends Group {
                     }
                     owner = null;
                 }
+                message.setText("Activity created successfully");
+                message.setFill(Color.GREEN);
             }
         });
         v.getChildren().add(addActivity);

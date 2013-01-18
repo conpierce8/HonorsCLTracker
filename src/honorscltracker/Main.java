@@ -70,7 +70,9 @@ public class Main extends Application {
     private int currentYear;
     private YearList years = new YearList();
     
-    private Group mainScreen, dataScreen, root;
+    private MainScreen mainScreen;
+    private DataScreen dataScreen;
+    private Group root;
     private Node table;
     private Text title;
     private VBox homeScreen;
@@ -114,6 +116,7 @@ public class Main extends Application {
         root.getChildren().add(getWindow(primaryStage)); //window graphics
         
         getHomeScreen();
+        mainScreen = new MainScreen(settings, new Year(currentYear));
         root.getChildren().add(homeScreen);
 
         Scene scene = new Scene(root, (Double) settings.get("stageWidth"), (Double) settings.get("stageHeight"));
@@ -125,7 +128,9 @@ public class Main extends Application {
     private void createNewFile(String fileName) {
         file = new File(fileName);
         defaultSettings();
-        getMainScreen();
+        if(mainScreen == null) {
+            mainScreen = new MainScreen(settings, new Year(currentYear));
+        }
         mainScreen.setLayoutY(25);
         root.getChildren().remove(homeScreen);
         root.getChildren().add(mainScreen);
@@ -178,160 +183,6 @@ public class Main extends Application {
         settings.put("scrollbarBGPaint", new Color(1, 1, 1, .4));
     }
     
-    private void getDataInputScreen() {
-        VBox v = new VBox();
-        v.setMaxWidth((Double) settings.get("stageWidth")-35);
-        v.setSpacing(10);
-        
-        final ComboBox yearCombo = new ComboBox();
-        yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years.getYearsList()));
-        yearCombo.setEditable(true);
-        yearCombo.setPrefHeight(25);
-        yearCombo.setPrefWidth(100);
-        HBox hb1 = new HBox(); 
-        hb1.setAlignment(Pos.CENTER_LEFT);
-        hb1.setSpacing(5);
-        hb1.setFillHeight(false);
-        Label l1 = new Label("Year:");
-        l1.setStyle("-fx-text-fill:white;");
-        hb1.getChildren().add(l1);
-        hb1.getChildren().add(yearCombo);
-        v.getChildren().add(hb1);
-        
-        final TextField dateField = new TextField();
-        dateField.setPromptText("Enter date (M/D/Y)");
-        HBox hb2 = new HBox();
-        Label l2 = new Label("Date:");
-        l2.setStyle("-fx-text-fill:white;");
-        hb2.getChildren().add(l2);
-        hb2.getChildren().add(dateField);
-        hb2.setAlignment(Pos.CENTER_LEFT);
-        hb2.setSpacing(5);
-        v.getChildren().add(hb2);
-        
-        final TextField contactNameField = new TextField();
-        contactNameField.setPromptText("Enter contact name:");
-        final TextField contactEmailField = new TextField();
-        contactEmailField.setPromptText("Contact email:");
-        final TextField contactPhoneField = new TextField();
-        contactPhoneField.setPromptText("Contact phone:");
-        HBox hb3 = new HBox();
-        Label l3 = new Label("Contact:");
-        l3.setStyle("-fx-text-fill:white;");
-        hb3.getChildren().add(l3);
-        VBox contact = new VBox();
-        contact.setSpacing(3);
-        contact.getChildren().add(contactNameField);
-        contact.getChildren().add(contactEmailField);
-        contact.getChildren().add(contactPhoneField);
-        hb3.getChildren().add(contact);
-        hb3.setAlignment(Pos.CENTER_LEFT);
-        hb3.setSpacing(5);
-        v.getChildren().add(hb3);
-        
-        final TextField shortDescField = new TextField();
-        shortDescField.setPromptText("Organization, e.g.");
-        HBox hb4 = new HBox();
-        Label l4 = new Label("Enter a short description:");
-        l4.setStyle("-fx-text-fill:white;");
-        hb4.getChildren().add(l4);
-        hb4.getChildren().add(shortDescField);
-        hb4.setAlignment(Pos.CENTER_LEFT);
-        hb4.setSpacing(5);
-        v.getChildren().add(hb4);
-        
-        final TextField hoursField = new TextField();
-        hoursField.setPromptText("Hours");
-        HBox hb5 = new HBox();
-        Label l5 = new Label("Hours:");
-        l5.setStyle("-fx-text-fill:white;");
-        hb5.getChildren().add(l5);
-        hb5.getChildren().add(hoursField);
-        hb5.setAlignment(Pos.CENTER_LEFT);
-        hb5.setSpacing(5);
-        v.getChildren().add(hb5);
-        
-        final HTMLEditor detailsField = new HTMLEditor();
-        detailsField.setPrefHeight(200);
-        v.getChildren().add(detailsField);
-        
-        Button addActivity = new Button("Add Comp Learning Event");
-        addActivity.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent arg0) {
-                GregorianCalendar d = new GregorianCalendar();
-                String contactName = contactNameField.getText();
-                String contactEmail = contactEmailField.getText();
-                String contactPhone = contactPhoneField.getText();
-                String year = yearCombo.getValue().toString();
-                String shortDesc = shortDescField.getText();
-                String details = detailsField.getHtmlText();
-                details = details.substring(details.indexOf("<body"));
-                details = details.substring(details.indexOf('>')+1, details.indexOf("</body"));
-                double hours = 0;
-                int startYr = -1;
-                try {
-                    hours = Double.parseDouble(hoursField.getText());
-                    startYr = Integer.parseInt(year.substring(0, 4));
-                } catch(NumberFormatException ex) {
-                    
-                }
-                CLActivity j = new CLActivity();
-                Contact c = new Contact();
-                c.setEmail(contactEmail);
-                c.setName(contactName);
-                c.setPhone(contactPhone);
-                j.setContact(c);
-                j.setDate(d);
-                j.setDesc(shortDesc);
-                j.setDetails(details);
-                j.setHours(hours);
-                if(startYr > -1) {
-                    //go for it
-                    if(years.indexOf(startYr) < 0) {
-                        years.add(new Year(startYr));
-                    }
-                    years.get(years.indexOf(startYr)).addCLActivity(j);
-                }
-            }
-        });
-        v.getChildren().add(addActivity);
-        
-        ScrollPane scrollpane = new ScrollPane();
-        scrollpane.setStyle("-fx-background-color: rgb(0,0,0,0);");
-        scrollpane.setPrefSize((Double) settings.get("stageWidth")-20,(Double) settings.get("stageHeight")-40);
-        scrollpane.setContent(v);
-        
-        Group backButton = new Group();
-        Rectangle r = new Rectangle(0,0,30,7);
-        r.setFill((Paint) settings.get("datascreenButtonBGPaint"));
-        r.setStroke((Paint) settings.get("datascreenButtonOutlinePaint"));
-        backButton.getChildren().add(r);
-        Polygon p = new Polygon();
-        p.getPoints().addAll(15.0, 2.0, 13.0, 5.0, 17.0, 5.0);
-        p.setFill((Paint) settings.get("datascreenButtonFGPaint"));
-        backButton.getChildren().add(p);
-        backButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-                root.getChildren().remove(dataScreen);
-                updateDisplay();
-                root.getChildren().add(mainScreen);
-                currState = "mainscreen";
-                updateWindowGraphics();
-            }
-        });
-        backButton.setLayoutX((Double) settings.get("stageWidth") - 145);
-        backButton.setLayoutY((Double) settings.get("stageHeight") - 34);
-        
-        dataScreen = new Group();
-        dataScreen.getChildren().add(scrollpane);
-        dataScreen.getChildren().add(backButton);
-        //TODO: data screen
-    }
-    
     private void getHomeScreen() {
         homeScreen = new VBox();
         homeScreen.setSpacing(20);
@@ -381,139 +232,6 @@ public class Main extends Application {
         homeScreen.setPrefSize((Double) settings.get("stageWidth") - 20, (Double) settings.get("stageHeight") - 35);
         homeScreen.setLayoutX(10);
         homeScreen.setLayoutY(25);
-    }
-    
-    private void getMainScreen() {
-        mainScreen = new Group();
-        
-        title = getTitle();
-        title.setLayoutX(((Double) settings.get("stageWidth")-title.getBoundsInParent().getWidth())/2);
-        tableY = title.getBoundsInParent().getHeight();
-        title.setLayoutY(tableY - 10);
-        mainScreen.getChildren().add(title);
-        
-        table = getTable();
-        
-        Group prevButton = new Group();
-        Rectangle prevButtonBG = new Rectangle(50,tableY-10);
-        prevButtonBG.setArcHeight(5); prevButtonBG.setArcWidth(5);
-        prevButtonBG.setFill((Paint) settings.get("mainscreenButtonBGPaint"));
-        prevButtonBG.setStroke((Paint) settings.get("mainscreenButtonOutlinePaint"));
-        prevButtonBG.setStrokeWidth(2);
-        prevButton.getChildren().add(prevButtonBG);
-        Polygon prevButtonFG = new Polygon(35,(tableY-20)/2,15,(tableY-10)/2,35,tableY/2);
-        prevButtonFG.setFill((Paint) settings.get("mainscreenButtonFGPaint"));
-        prevButton.getChildren().add(prevButtonFG);
-        prevButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-                currentYear--;
-                updateDisplay();
-            }
-        });
-        prevButton.setLayoutX(10); prevButton.setLayoutY(0);
-        mainScreen.getChildren().add(prevButton);
-        
-        Group nextButton = new Group();
-        Rectangle nextButtonBG = new Rectangle(50,tableY-10);
-        nextButtonBG.setArcHeight(5); nextButtonBG.setArcWidth(5);
-        nextButtonBG.setFill((Paint) settings.get("mainscreenButtonBGPaint"));
-        nextButtonBG.setStroke((Paint) settings.get("mainscreenButtonOutlinePaint"));
-        nextButtonBG.setStrokeWidth(2);
-        nextButton.getChildren().add(nextButtonBG);
-        Polygon nextButtonFG = new Polygon(15,(tableY-20)/2,35,(tableY-10)/2,15,tableY/2);
-        nextButtonFG.setFill((Paint) settings.get("mainscreenButtonFGPaint"));
-        nextButton.getChildren().add(nextButtonFG);
-        nextButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-                currentYear++;
-                updateDisplay();
-            }
-        });
-        nextButton.setLayoutX((Double) settings.get("stageWidth")-60);
-        nextButton.setLayoutY(0); 
-        mainScreen.getChildren().add(nextButton);
-        
-        Group inputButton = new Group();
-        Rectangle inputButtonBg = new Rectangle(30, 7);
-        inputButtonBg.setStroke((Paint) settings.get("mainscreenButtonOutlinePaint"));
-        inputButtonBg.setFill((Paint) settings.get("mainscreenButtonBGPaint"));
-        inputButton.getChildren().add(inputButtonBg);
-        Polygon inputButtonFg = new Polygon();
-        inputButtonFg.getPoints().addAll(0.0,0.0,4.0,0.0,2.0,4.5);
-        inputButtonFg.setFill((Paint) settings.get("mainscreenButtonFGPaint"));
-        inputButtonFg.setLayoutX(13); inputButtonFg.setLayoutY(1.5);
-        inputButton.getChildren().add(inputButtonFg);
-        inputButton.setLayoutX((Double) settings.get("stageWidth")-145);
-        inputButton.setLayoutY(-7.5);
-        inputButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-                if(dataScreen == null) {
-                    getDataInputScreen();
-                }
-                dataScreen.setLayoutX(10);
-                dataScreen.setLayoutY(25);
-                root.getChildren().remove(mainScreen);
-                root.getChildren().add(dataScreen);
-                currState = "datascreen";
-                updateWindowGraphics();
-            }
-        });
-        mainScreen.getChildren().add(inputButton);
-        
-        Group saveButton = new Group();
-        Rectangle saveButtonBg = new Rectangle(30, 7);
-        saveButtonBg.setStroke((Paint) settings.get("mainscreenButtonOutlinePaint"));
-        saveButtonBg.setFill((Paint) settings.get("mainscreenButtonBGPaint"));
-        saveButton.getChildren().add(saveButtonBg);
-        Rectangle saveButtonFg = new Rectangle(0,0,4,4);
-        saveButtonFg.setFill((Paint) settings.get("mainscreenButtonFGPaint"));
-        saveButtonFg.setLayoutX(13); saveButtonFg.setLayoutY(1.5);
-        saveButton.getChildren().add(saveButtonFg);
-        saveButton.setLayoutX((Double) settings.get("stageWidth")-185);
-        saveButton.setLayoutY(-7.5);
-        saveButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-                writeToFile(file);
-            }
-        });
-        mainScreen.getChildren().add(saveButton);
-        
-        Group homeButton = new Group();
-        Rectangle homeButtonBg = new Rectangle(6, 30);
-        homeButtonBg.setStroke((Paint) settings.get("mainscreenButtonOutlinePaint"));
-        homeButtonBg.setFill((Paint) settings.get("mainscreenButtonBGPaint"));
-        homeButton.getChildren().add(homeButtonBg);
-        Polygon homeButtonFg = new Polygon();
-        homeButtonFg.getPoints().addAll(0.0,2.0,3.0,0.0,3.0,4.0);
-        homeButtonFg.setFill((Paint) settings.get("mainscreenButtonFGPaint"));
-        homeButtonFg.setLayoutX(1.5); homeButtonFg.setLayoutY(13);
-        homeButton.getChildren().add(homeButtonFg);
-        homeButton.setLayoutX(2.5);
-        homeButton.setLayoutY(((Double) settings.get("stageHeight") - 35)/2-15);
-        homeButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-                root.getChildren().remove(mainScreen);
-                root.getChildren().add(homeScreen);
-                file = null;
-                years.clear();
-                currState = "homescreen";
-                updateWindowGraphics();
-            }
-        });
-        mainScreen.getChildren().add(homeButton);
-        
-        table.setLayoutY(tableY); table.setLayoutX(10);
-        mainScreen.getChildren().add(table);
     }
     
     private Text getTitle() {
@@ -625,7 +343,11 @@ public class Main extends Application {
         file = new File(fileName);
         defaultSettings();
         loadFromFile(file);
-        getMainScreen();
+        if(years.indexOf(currentYear) >= 0) {
+            mainScreen.updateTable(years.get(years.indexOf(currentYear)));
+        } else {
+            mainScreen.updateTable(new Year(currentYear));
+        }
         mainScreen.setLayoutY(25);
         root.getChildren().remove(homeScreen);
         root.getChildren().add(mainScreen);

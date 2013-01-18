@@ -32,9 +32,10 @@ public class MainScreen extends Group {
             prevYearRequest, nextYearRequest, saveRequest, editRequest;
     private double tableY, scrollStartY;
     
-    public MainScreen(HashMap<String, Object> settings, String title) {
+    public MainScreen(HashMap<String, Object> settings, Year data) {
         this.settings = settings;
-        this.title = new Text(title);
+        this.data = data;
+        this.title = new Text(this.data.getYearString());
         this.title.setFont((Font) this.settings.get("mainscreenLabelFont"));
         init();
     }
@@ -46,6 +47,8 @@ public class MainScreen extends Group {
     public void updateTable(Year data) {
         this.data = data;
         table.getChildren().clear();
+        title.setText(data.getYearString());
+        layoutTitle();
         getTable();
     }
     
@@ -77,10 +80,14 @@ public class MainScreen extends Group {
         saveRequest = h;
     }
     
-    private void init() {
+    private void layoutTitle() {
         title.setLayoutX(((Double) settings.get("stageWidth")-title.getBoundsInParent().getWidth())/2);
         tableY = title.getBoundsInParent().getHeight();
         title.setLayoutY(tableY - 10);
+    }
+    
+    private void init() {
+        layoutTitle();
         this.getChildren().add(title);
         
         getTable();
@@ -284,7 +291,7 @@ public class MainScreen extends Group {
         table.getChildren().add(dataRows);
         
         final double availableSpace = ((Double) settings.get("stageHeight")) - tableY - headerRowHeight - 35;
-        Group scrollBar = getScrollbar(availableSpace, 5, 0, dataRows,headerRowHeight);
+        Group scrollBar = new Scrollbar(availableSpace, 5, 0, dataRows,headerRowHeight, settings);
         scrollBar.setLayoutX(stageWidth-20-((Double)settings.get("scrollbarWidth")));
         scrollBar.setLayoutY(headerRowHeight);
         table.getChildren().add(scrollBar);
@@ -338,72 +345,6 @@ public class MainScreen extends Group {
             }
         });
         return r;
-    }
-    
-    private Group getScrollbar(final double availableSpace, final double topPad, 
-            double bottomPad, final Node n, final double minClipY) {
-        Group group = new Group();
-        
-        final double scrollbarWidth = (Double) settings.get("scrollbarWidth");
-        final double height = n.getBoundsInLocal().getHeight() + topPad + bottomPad;
-        double scrollSpace = availableSpace - scrollbarWidth;
-        final double barHeight = Math.max(scrollbarWidth, scrollSpace*Math.min(1, availableSpace/height));
-        
-        Polygon scrollBarBG = new Polygon();
-        scrollBarBG.getPoints().addAll(0.0,scrollbarWidth/2, 0.0, scrollSpace-scrollbarWidth/2,
-                scrollbarWidth/2, scrollSpace, scrollbarWidth, scrollSpace-scrollbarWidth/2,
-                scrollbarWidth, scrollbarWidth/2, scrollbarWidth/2, 0.0);
-        scrollBarBG.setFill((Paint) settings.get("scrollbarBGPaint"));
-        scrollBarBG.relocate(0, scrollbarWidth/2);
-        group.getChildren().add(scrollBarBG);
-        
-        Polygon topBox = new Polygon();
-        topBox.getPoints().addAll(0.0,0.0,0.0,scrollbarWidth-2, scrollbarWidth/2-1, scrollbarWidth/2-1,
-                scrollbarWidth-2, scrollbarWidth-2, scrollbarWidth-2,0.0);
-        topBox.setFill((Paint) settings.get("scrollbarFGPaint"));
-        topBox.setStroke((Paint) settings.get("scrollbarFGStroke"));
-        topBox.relocate(0 ,0);
-        group.getChildren().add(topBox);
-        
-        Polygon bottomBox = new Polygon();
-        bottomBox.getPoints().addAll(0.0,0.0,0.0,scrollbarWidth-2, scrollbarWidth-2, scrollbarWidth-2,
-                scrollbarWidth-2,0.0, scrollbarWidth/2-1, scrollbarWidth/2-1);
-        bottomBox.setFill((Paint) settings.get("scrollbarFGPaint"));
-        bottomBox.setStroke((Paint) settings.get("scrollbarFGStroke"));
-        bottomBox.relocate(0, availableSpace-scrollbarWidth-1);
-        group.getChildren().add(bottomBox);
-        
-        final Polygon bar = new Polygon();
-        bar.getPoints().addAll(0.0,scrollbarWidth/2-1, 0.0, barHeight-scrollbarWidth/2,
-                scrollbarWidth/2-1, barHeight-1, scrollbarWidth-2, barHeight-scrollbarWidth/2,
-                scrollbarWidth-2, scrollbarWidth/2-1, scrollbarWidth/2-1, 0.0);
-        bar.setFill((Paint) settings.get("scrollbarFGPaint"));
-        bar.setStroke((Paint) settings.get("scrollbarFGStroke"));
-        bar.relocate(0, scrollbarWidth/2-1);
-        
-        bar.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent arg0) {
-                scrollStartY = arg0.getSceneY() - bar.getLayoutY();
-            }
-        });
-        
-        final Rectangle clip = new Rectangle(0, 0, n.getBoundsInLocal().getWidth(), availableSpace-topPad-bottomPad);
-        n.setClip(clip);
-        bar.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent arg0) {
-                double minY = scrollbarWidth/2;
-                double maxY = availableSpace-scrollbarWidth/2;
-                double newY = Math.max(minY, Math.min(arg0.getSceneY() - scrollStartY, maxY-barHeight));
-                bar.setLayoutY(newY);
-                double newClipY = ((newY-minY)/(maxY-minY))*height;
-                clip.setLayoutY(newClipY);
-                n.setLayoutY(minClipY+topPad-newClipY);
-            }
-        });
-        group.getChildren().add(bar);
-        return group;
     }
     
 }
