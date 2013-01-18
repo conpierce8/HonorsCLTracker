@@ -10,6 +10,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
@@ -28,7 +29,7 @@ public class MainScreen extends Group {
     private Group prevButton, nextButton, homeButton, inputButton, saveButton;
     private Group table;
     private Handler homescreenRequest, datascreenRequest, detailRequest,
-            prevYearRequest, nextYearRequest, saveRequest;
+            prevYearRequest, nextYearRequest, saveRequest, editRequest;
     private double tableY, scrollStartY;
     
     public MainScreen(HashMap<String, Object> settings, String title) {
@@ -43,23 +44,37 @@ public class MainScreen extends Group {
     }
     
     public void updateTable(Year data) {
-        
+        this.data = data;
+        table.getChildren().clear();
+        getTable();
     }
     
-    public void addHomeScreenRequestHandler(Handler h) {
+    public void setHomeScreenRequestHandler(Handler h) {
         homescreenRequest = h;
     }
     
-    public void addDataScreenRequestHandler(Handler h) {
+    public void setDataScreenRequestHandler(Handler h) {
         datascreenRequest = h;
     }
     
-    public void addDetailRequestHandler(Handler h) {
+    public void setEditCLActivityRequestHandler(Handler h) {
+        editRequest = h;
+    }
+    
+    public void setDetailRequestHandler(Handler h) {
         detailRequest = h;
     }
     
-    public void addPrevYearRequestHandler(Handler h) {
-        
+    public void setPrevYearRequestHandler(Handler h) {
+        prevYearRequest = h;
+    }
+    
+    public void setNextYearRequestHandler(Handler h) {
+        nextYearRequest = h;
+    }
+    
+    public void setSaveRequestHandler(Handler h) {
+        saveRequest = h;
     }
     
     private void init() {
@@ -84,7 +99,7 @@ public class MainScreen extends Group {
 
             @Override
             public void handle(MouseEvent arg0) {
-                prevYearRequest.action(null);
+                prevYearRequest.action(data);
             }
         });
         prevButton.setLayoutX(10); prevButton.setLayoutY(0);
@@ -104,7 +119,7 @@ public class MainScreen extends Group {
 
             @Override
             public void handle(MouseEvent arg0) {
-                nextYearRequest.action(null);
+                nextYearRequest.action(data);
             }
         });
         nextButton.setLayoutX((Double) settings.get("stageWidth")-60);
@@ -315,7 +330,11 @@ public class MainScreen extends Group {
 
             @Override
             public void handle(MouseEvent event) {
-                detailRequest.action(c);
+                if(event.getButton().equals(MouseButton.PRIMARY)) {
+                    detailRequest.action(c);
+                } else if(event.getButton().equals(MouseButton.SECONDARY)) {
+                    editRequest.action(c);
+                }
             }
         });
         return r;
@@ -326,10 +345,7 @@ public class MainScreen extends Group {
         Group group = new Group();
         
         final double scrollbarWidth = (Double) settings.get("scrollbarWidth");
-//        System.out.println("stageHeight:"+(Double) settings.get("stageHeight"));
-//        System.out.println("avail: "+availableSpace);
         final double height = n.getBoundsInLocal().getHeight() + topPad + bottomPad;
-//        System.out.println("Available:"+availableSpace+", dataHeight="+height);
         double scrollSpace = availableSpace - scrollbarWidth;
         final double barHeight = Math.max(scrollbarWidth, scrollSpace*Math.min(1, availableSpace/height));
         
@@ -368,14 +384,11 @@ public class MainScreen extends Group {
         bar.setOnMousePressed(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent arg0) {
-//                System.out.println("Bar is at: "+bar.getLayoutY());
                 scrollStartY = arg0.getSceneY() - bar.getLayoutY();
-//                System.out.println("translateStartY="+translateStartY);
             }
         });
         
         final Rectangle clip = new Rectangle(0, 0, n.getBoundsInLocal().getWidth(), availableSpace-topPad-bottomPad);
-//        clip.setLayoutY(minClipY+topPad);
         n.setClip(clip);
         bar.setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override
@@ -383,11 +396,9 @@ public class MainScreen extends Group {
                 double minY = scrollbarWidth/2;
                 double maxY = availableSpace-scrollbarWidth/2;
                 double newY = Math.max(minY, Math.min(arg0.getSceneY() - scrollStartY, maxY-barHeight));
-//                System.out.println("min:"+minY+", max:"+maxY+", val:"+newY);
                 bar.setLayoutY(newY);
                 double newClipY = ((newY-minY)/(maxY-minY))*height;
-                clip.setLayoutY(/*minClipY+topPad+*/newClipY);
-//                System.out.println("\tclip="+dataRows.getClip().getLayoutY());
+                clip.setLayoutY(newClipY);
                 n.setLayoutY(minClipY+topPad-newClipY);
             }
         });
