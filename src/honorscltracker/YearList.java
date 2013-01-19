@@ -15,7 +15,7 @@ import java.util.TreeSet;
 public class YearList extends ArrayList<Year> {
     
     public void addData(CLActivity j) {
-        Year m = new Year(j.getDate().get(Calendar.YEAR));
+        Year m = new Year(j.getStartYr());
         int idx = indexOf(m);
         if(idx < 0) {
             add(m);

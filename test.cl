@@ -1,6 +1,7 @@
 ~Activity~
 desc=Honors Tech Committee
 date=1/15/2013
+year=2012
 contactname=Reginald D. Pierce
 contactemail=rdp2575@rit.edu
 contactphone=1 (315) 276-1164
@@ -13,6 +14,7 @@ hours=1.0
 ~Activity~
 desc=Honors Tech Committee
 date=1/15/2013
+year=2012
 contactname=Reginald D. Pierce
 contactemail=rdp2575@rit.edu
 contactphone=1 (315) 276-1164
@@ -25,6 +27,7 @@ hours=2.0
 ~Activity~
 desc=Honors Tech Committee
 date=1/15/2013
+year=2012
 contactname=Reginald D. Pierce
 contactemail=rdp2575@rit.edu
 contactphone=1 (315) 276-1164
@@ -37,6 +40,7 @@ hours=2.0
 ~Activity~
 desc=Honors Tech Committee
 date=1/15/2013
+year=2012
 contactname=Reginald D. Pierce
 contactemail=rdp2575@rit.edu
 contactphone=1 (315) 276-1164
@@ -49,6 +53,7 @@ hours=2.0
 ~Activity~
 desc=Honors Tech Committee
 date=1/15/2013
+year=2012
 contactname=Reginald D. Pierce
 contactemail=rdp2575@rit.edu
 contactphone=1 (315) 276-1164
@@ -61,6 +66,7 @@ hours=2.0
 ~Activity~
 desc=Honors Tech Committee
 date=1/15/2013
+year=2012
 contactname=Reginald D. Pierce
 contactemail=rdp2575@rit.edu
 contactphone=1 (315) 276-1164
@@ -73,6 +79,7 @@ hours=2.0
 ~Activity~
 desc=Honors Tech Committee
 date=1/15/2013
+year=2012
 contactname=Reginald D. Pierce
 contactemail=rdp2575@rit.edu
 contactphone=1 (315) 276-1164
@@ -85,6 +92,7 @@ hours=2.0
 ~Activity~
 desc=Honors Tech Committee
 date=1/15/2013
+year=2012
 contactname=Reginald D. Pierce
 contactemail=rdp2575@rit.edu
 contactphone=1 (315) 276-1164
@@ -97,6 +105,7 @@ hours=2.0
 ~Activity~
 desc=My Own Org
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -109,6 +118,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -121,6 +131,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -133,6 +144,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -145,6 +157,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -157,6 +170,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -169,6 +183,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -181,6 +196,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -193,6 +209,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -205,6 +222,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -217,6 +235,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -229,6 +248,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -241,6 +261,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -253,6 +274,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -265,6 +287,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -277,6 +300,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -289,6 +313,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -301,6 +326,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -313,6 +339,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -325,6 +352,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -337,6 +365,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111
@@ -349,6 +378,7 @@ hours=20.0
 ~Activity~
 desc=Not Honors Tech COmmittee
 date=1/15/2013
+year=2012
 contactname=Me
 contactemail=me@you.com
 contactphone=1 (111) 111-1111

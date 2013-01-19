@@ -97,7 +97,7 @@ public class Main extends Application {
     
     public Main() {
         GregorianCalendar c = new GregorianCalendar();
-        if(c.get(Calendar.MONTH) > 5) {
+        if(c.get(Calendar.MONTH) < 5) {
             currentYear = c.get(Calendar.YEAR)-1;
         } else {
             currentYear = c.get(Calendar.YEAR);
@@ -115,8 +115,47 @@ public class Main extends Application {
         root = new Group(); //Contains everything to be displayed
         root.getChildren().add(getWindow(primaryStage)); //window graphics
         
-        getHomeScreen();
         mainScreen = new MainScreen(settings, new Year(currentYear));
+        mainScreen.setDataScreenRequestHandler(new Handler() {
+
+            @Override
+            public void action(Object data) {
+                root.getChildren().remove(mainScreen);
+                root.getChildren().add(dataScreen);
+            }
+        });
+        mainScreen.setDetailRequestHandler(new Handler() {
+
+            @Override
+            public void action(Object data) {
+                getDetailScreen((CLActivity) data);
+            }
+        });
+        mainScreen.setEditCLActivityRequestHandler(new Handler() {
+
+            @Override
+            public void action(Object data) {
+                dataScreen.setOwner((CLActivity) data);
+                root.getChildren().remove(mainScreen);
+                root.getChildren().add(dataScreen);
+            }
+        });
+        mainScreen.setHomeScreenRequestHandler(new Handler() {
+
+            @Override
+            public void action(Object data) {
+                root.getChildren().remove(mainScreen);
+                root.getChildren().add(homeScreen);
+            }
+        });
+        mainScreen.setSaveRequestHandler(new Handler() {
+
+            @Override
+            public void action(Object data) {
+                writeToFile(file);
+            }
+        });
+        getHomeScreen();
         root.getChildren().add(homeScreen);
 
         Scene scene = new Scene(root, (Double) settings.get("stageWidth"), (Double) settings.get("stageHeight"));
@@ -160,7 +199,7 @@ public class Main extends Application {
         settings.put("mainscreenLabelPaint", Color.WHITE);
         settings.put("mainscreenLabelFont", new Font("Arial", 30));
         settings.put("tableDataTextPaint", Color.BLACK);
-        settings.put("tableDataTextFont", new Font("Arial", 12));
+        settings.put("tableDataTextFont", new Font("Arial", 14));
         settings.put("tableHeaderTextPaint", Color.WHITE);
         settings.put("tableHeaderTextFont", new Font("Comic Sans MS", 16));
         settings.put("mainscreenButtonFGPaint", Color.WHITE);
@@ -232,13 +271,6 @@ public class Main extends Application {
         homeScreen.setPrefSize((Double) settings.get("stageWidth") - 20, (Double) settings.get("stageHeight") - 35);
         homeScreen.setLayoutX(10);
         homeScreen.setLayoutY(25);
-    }
-    
-    private Text getTitle() {
-        Text titleText=new Text(currentYear+"-"+((currentYear+1))%100);
-        titleText.setFont((Font) settings.get("mainscreenLabelFont"));
-        titleText.setFill((Paint) settings.get("mainscreenLabelPaint"));
-        return titleText;
     }
     
     /**
@@ -678,6 +710,7 @@ public class Main extends Application {
                         String line = "~Activity~\n";
                         line += "desc="+d+"\n";
                         line += "date="+format.format(j.getDate().getTime())+"\n";
+                        line += "year="+j.getStartYr()+"\n";
                         Contact c = j.getContact();
                         line += "contactname="+c.getName()+"\n";
                         line += "contactemail="+c.getEmail()+"\n";
@@ -733,6 +766,9 @@ public class Main extends Application {
                 } else if(s.startsWith("hours=") && parsingAct) {
                     a.setHours(Double.parseDouble(s.substring(s.indexOf('=')+1)));
                     complete += 1<<5;
+                } else if(s.startsWith("year=") && parsingAct) {
+                    a.setStartYr(Integer.parseInt(s.substring(s.indexOf('=')+1)));
+                    complete += 1<<6;
                 } else if(s.equals("~~Details~~") && parsingAct) {
                     parsingDetails = true;
                 } else if(parsingDetails) {
@@ -741,10 +777,10 @@ public class Main extends Application {
                     } else {
                         parsingDetails = false;
                         a.setDetails(details);
-                        complete += 1<<6;
+                        complete += 1<<7;
                     }
                 } else if(parsingAct && s.equals("~/Activity~")) {
-                    if(complete == (1<<7) - 1) {
+                    if(complete == (1<<8) - 1) {
                         a.setContact(c);
                         years.addData(a);
                         parsingAct = false;

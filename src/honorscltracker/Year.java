@@ -37,7 +37,12 @@ public class Year {
     }
     
     public String getYearString() {
-        return startYr+"-"+(startYr % 100);
+        String s = startYr + "-";
+        if((startYr + 1) % 100 < 10) {
+            s += "0";
+        } 
+        s += ((startYr + 1) % 100);
+        return s;
     }
     
     public boolean removeCLActivity(CLActivity e) {

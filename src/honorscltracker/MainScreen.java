@@ -30,25 +30,25 @@ public class MainScreen extends Group {
     private Group table;
     private Handler homescreenRequest, datascreenRequest, detailRequest,
             prevYearRequest, nextYearRequest, saveRequest, editRequest;
-    private double tableY, scrollStartY;
+    private double tableY;
     
     public MainScreen(HashMap<String, Object> settings, Year data) {
         this.settings = settings;
         this.data = data;
-        this.title = new Text(this.data.getYearString());
-        this.title.setFont((Font) this.settings.get("mainscreenLabelFont"));
+        table = new Group();
+        title = new Text(this.data.getYearString());
+        System.out.println("creating mainscreen, title text: "+title.getText());
+        title.setFont((Font) this.settings.get("mainscreenLabelFont"));
+        title.setFill((Paint) settings.get("mainscreenLabelPaint"));
         init();
-    }
-    
-    public void setTitle(String title) {
-        this.title.setText(title);
     }
     
     public void updateTable(Year data) {
         this.data = data;
-        table.getChildren().clear();
-        title.setText(data.getYearString());
+        System.out.println("setting data to "+data.getYearString());
+        title.setText(this.data.getYearString());
         layoutTitle();
+        table.getChildren().clear();
         getTable();
     }
     
@@ -81,9 +81,12 @@ public class MainScreen extends Group {
     }
     
     private void layoutTitle() {
-        title.setLayoutX(((Double) settings.get("stageWidth")-title.getBoundsInParent().getWidth())/2);
-        tableY = title.getBoundsInParent().getHeight();
-        title.setLayoutY(tableY - 10);
+        double x = ((Double) settings.get("stageWidth")-title.getBoundsInParent().getWidth())/2;
+        title.setLayoutX(x);
+        tableY = title.getBoundsInLocal().getHeight();
+        double y = tableY - 10;
+        title.setLayoutY(y);
+        System.out.println("title layout: "+x+","+y);
     }
     
     private void init() {
@@ -94,7 +97,8 @@ public class MainScreen extends Group {
         
         prevButton = new Group();
         Rectangle prevButtonBG = new Rectangle(50,tableY-10);
-        prevButtonBG.setArcHeight(5); prevButtonBG.setArcWidth(5);
+        prevButtonBG.setArcHeight(5);
+        prevButtonBG.setArcWidth(5);
         prevButtonBG.setFill((Paint) settings.get("mainscreenButtonBGPaint"));
         prevButtonBG.setStroke((Paint) settings.get("mainscreenButtonOutlinePaint"));
         prevButtonBG.setStrokeWidth(2);
@@ -114,7 +118,8 @@ public class MainScreen extends Group {
         
         nextButton = new Group();
         Rectangle nextButtonBG = new Rectangle(50,tableY-10);
-        nextButtonBG.setArcHeight(5); nextButtonBG.setArcWidth(5);
+        nextButtonBG.setArcHeight(5);
+        nextButtonBG.setArcWidth(5);
         nextButtonBG.setFill((Paint) settings.get("mainscreenButtonBGPaint"));
         nextButtonBG.setStroke((Paint) settings.get("mainscreenButtonOutlinePaint"));
         nextButtonBG.setStrokeWidth(2);
@@ -195,19 +200,19 @@ public class MainScreen extends Group {
         });
         this.getChildren().add(homeButton);
         
-        table.setLayoutY(tableY); table.setLayoutX(10);
+        table.setLayoutY(tableY);
+        table.setLayoutX(10);
         this.getChildren().add(table);
     }
     
     private void getTable() {
-        table = new Group();
-        
-        final Object[][] tableData = new Object[4][data.getSize()];
+        final Object[][] tableData = new Object[4][data.getSize()+1];
         int row = 0;
         Group dataRows = new Group();
         Text asdf = new Text("T");
         asdf.setFont((Font) settings.get("tableDataTextFont"));
         double rowHeight = asdf.getBoundsInParent().getHeight() + 4;
+        double totalHours = 0;
         for(String s : data.getAllDescs()) {
             int count = 0;
             for(CLActivity c : data.getCLActivities(s)) {
@@ -217,15 +222,19 @@ public class MainScreen extends Group {
                 tableData[1][row] = Main.format.format(c.getDate().getTime());
                 tableData[2][row] = c.getContact().getName();
                 tableData[3][row] = c.getHours();
+                totalHours += c.getHours();
                 dataRows.getChildren().add(getTableRowRect(row,rowHeight, c));
                 count ++;
                 row ++;
             }
         }
+        dataRows.getChildren().add(getTableRowRect(row, rowHeight, null));
+        tableData[2][tableData[2].length-1] = "TOTAL";
+        tableData[3][tableData[3].length-1] = totalHours;
         
         final double stageWidth = (Double) settings.get("stageWidth");
         
-        Group c2 = getColumn(tableData[1], rowHeight, -1);
+        Group c2 = getColumn(tableData[1], rowHeight, 180);
         Text c2Head = new Text("Date");
         c2Head.setTextOrigin(VPos.CENTER); 
         c2Head.setFont((Font) settings.get("tableHeaderTextFont"));
@@ -240,7 +249,7 @@ public class MainScreen extends Group {
         headerBG.setFill((Paint) settings.get("tableHeaderBGPaint"));
         table.getChildren().add(headerBG);
         
-        Group c3 = getColumn(tableData[2], rowHeight, -1);
+        Group c3 = getColumn(tableData[2], rowHeight, 180);
         Text c3Head = new Text("Contact");
         c3Head.setTextOrigin(VPos.CENTER); 
         c3Head.setFont((Font) settings.get("tableHeaderTextFont"));
@@ -248,7 +257,7 @@ public class MainScreen extends Group {
         double c3Width = Math.max(c3.getBoundsInParent().getWidth(),
                 c3Head.getBoundsInParent().getWidth())+10;
         
-        Group c4 = getColumn(tableData[3], rowHeight, -1);
+        Group c4 = getColumn(tableData[3], rowHeight, 180);
         Text c4Head = new Text("Hours");
         c4Head.setTextOrigin(VPos.CENTER); 
         c4Head.setFont((Font) settings.get("tableHeaderTextFont"));
@@ -333,17 +342,19 @@ public class MainScreen extends Group {
                 ?(Paint) settings.get("tableRow1BGPaint")
                 :(Paint) settings.get("tableRow2BGPaint") );
         r.setLayoutX(0); r.setLayoutY(row*dataRowHeight);
-        r.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        if(c != null) {
+            r.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
-            @Override
-            public void handle(MouseEvent event) {
-                if(event.getButton().equals(MouseButton.PRIMARY)) {
-                    detailRequest.action(c);
-                } else if(event.getButton().equals(MouseButton.SECONDARY)) {
-                    editRequest.action(c);
+                @Override
+                public void handle(MouseEvent event) {
+                    if(event.getButton().equals(MouseButton.PRIMARY)) {
+                        detailRequest.action(c);
+                    } else if(event.getButton().equals(MouseButton.SECONDARY)) {
+                        editRequest.action(c);
+                    }
                 }
-            }
-        });
+            });
+        }
         return r;
     }
     
