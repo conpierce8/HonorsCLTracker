@@ -347,9 +347,9 @@ public class MainScreen extends Group {
 
                 @Override
                 public void handle(MouseEvent event) {
-                    if(event.getButton().equals(MouseButton.PRIMARY)) {
+                    if(event.getButton() == MouseButton.PRIMARY) {
                         detailRequest.action(c);
-                    } else if(event.getButton().equals(MouseButton.SECONDARY)) {
+                    } else if(event.getButton() == MouseButton.SECONDARY) {
                         editRequest.action(c);
                     }
                 }

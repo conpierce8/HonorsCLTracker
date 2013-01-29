@@ -182,7 +182,8 @@ public class Main extends Application {
         settings.put("homescreenBGStroke", new Color(1,.5,0,.8));
         settings.put("homescreenTextPaint", Color.LIGHTGRAY);
         settings.put("homescreenTextFont", new Font("Arial", 16));
-        settings.put("mainscreenBGPaint", new Color(.506, .243, .118, .8));
+//        settings.put("mainscreenBGPaint", new Color(.506, .243, .118, .8));
+        settings.put("mainscreenBGPaint", new Color(0,0,0,.8));
         settings.put("mainscreenBGStroke", Color.BLACK);
         settings.put("datascreenBGPaint", new Color(.1, .1, .1, .8));
         settings.put("datascreenBGStroke", Color.TRANSPARENT);
