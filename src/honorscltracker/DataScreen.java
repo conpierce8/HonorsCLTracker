@@ -259,6 +259,7 @@ public class DataScreen extends Group {
     }
     
     public void setOwner(CLActivity owner) {
+        CLActivity c = (owner == null) ? new CLActivity() : owner;
         yearCombo.setValue(owner.getYearString());
         dateField.setText(Main.format.format(owner.getDate().getTime()));
         contactNameField.setText(owner.getContact().getName());

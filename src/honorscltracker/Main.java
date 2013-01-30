@@ -72,6 +72,7 @@ public class Main extends Application {
     
     private MainScreen mainScreen;
     private DataScreen dataScreen;
+    private DetailScreen detailScreen;
     private Group root;
     private Node table;
     private Text title;
@@ -93,7 +94,6 @@ public class Main extends Application {
         //load last configuration
         launch(args);
     }
-    private Group detailScreen;
     
     public Main() {
         GregorianCalendar c = new GregorianCalendar();
@@ -115,53 +115,72 @@ public class Main extends Application {
         root = new Group(); //Contains everything to be displayed
         root.getChildren().add(getWindow(primaryStage)); //window graphics
         
+        //<editor-fold defaultstate="collapsed" desc="Initialize all the screens">
+        getHomeScreen();
         mainScreen = new MainScreen(settings, new Year(currentYear));
+        detailScreen = new DetailScreen(settings);
+        dataScreen = new DataScreen(settings, years);
+        //</editor-fold>
+        
+        //<editor-fold defaultstate="collapsed" desc="Implement action handlers">
         mainScreen.setDataScreenRequestHandler(new Handler() {
-
             @Override
             public void action(Object data) {
-                root.getChildren().remove(mainScreen);
-                root.getChildren().add(dataScreen);
+                dataScreen.setOwner(null);
+                switchScreens("mainscreen", "datascreen");
             }
         });
         mainScreen.setDetailRequestHandler(new Handler() {
-
             @Override
             public void action(Object data) {
-                getDetailScreen((CLActivity) data);
+                detailScreen.setCLActivity((CLActivity) data);
+                switchScreens("mainscreen", "detailscreen");
             }
         });
         mainScreen.setEditCLActivityRequestHandler(new Handler() {
-
             @Override
             public void action(Object data) {
                 dataScreen.setOwner((CLActivity) data);
-                root.getChildren().remove(mainScreen);
-                root.getChildren().add(dataScreen);
+                switchScreens("mainscreen", "datascreen");
             }
         });
         mainScreen.setHomeScreenRequestHandler(new Handler() {
-
             @Override
             public void action(Object data) {
-                root.getChildren().remove(mainScreen);
-                root.getChildren().add(homeScreen);
+                switchScreens("mainscreen", "homescreen");
             }
         });
         mainScreen.setSaveRequestHandler(new Handler() {
-
             @Override
             public void action(Object data) {
                 writeToFile(file);
             }
         });
-        getHomeScreen();
+        //</editor-fold>
+        
         root.getChildren().add(homeScreen);
 
         Scene scene = new Scene(root, (Double) settings.get("stageWidth"), (Double) settings.get("stageHeight"));
         scene.setFill(new Color(0,0,0,0));
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+    
+    private void switchScreens(String from, String to) {
+        switch(from) {
+            case "mainscreen": root.getChildren().remove(mainScreen); break;
+            case "datascreen": root.getChildren().remove(dataScreen); break;
+            case "detailscreen": root.getChildren().remove(detailScreen); break;
+            case "homescreen": root.getChildren().remove(homeScreen); break;
+        }
+        switch(to) {
+            case "mainscreen": root.getChildren().add(mainScreen); break;
+            case "datascreen": root.getChildren().add(dataScreen); break;
+            case "detailscreen": root.getChildren().add(detailScreen); break;
+            case "homescreen": root.getChildren().add(homeScreen); break;
+        }
+        currState = to;
+        updateWindowGraphics();
     }
     
     private void createNewFile(String fileName) {
@@ -644,63 +663,6 @@ public class Main extends Application {
             }
         });
         return r;
-    }
-    
-    private void getDetailScreen(CLActivity c) {
-        detailScreen = new Group();
-        String document = "<html><head><style>"
-                + "h1.organization{font:18pt bold;font-family:sans-serif;}";
-        document += "span.contact-name{font:14pt italic;font-family:sans-serif;}";
-        document += "span.label{font:10pt;font-family:sans-serif;";
-        document += "span.contact-phone{font:11pt font-family:sans-serif;}";
-        document += "span.contact-email{font:11pt; font-family: monospace;}";
-        document += "p.default{font:10pt;}table.noborders{border:0px;}";
-        document += "td.spaced{padding:10px;height:25px;}";
-        document += "</style></head>";
-        document += "<body><h1 class='organization'>"+c.getDesc()+"</h1>";
-        document += "<table class='noborders'>";
-        document += "<tr><td class='spaced'><span class='label'>Contact Name: </span></td>"
-                + "<td class='spaced'><span class='contact-name'>"+c.getContact().getName()+"</span></td></tr>";
-        document += "<tr><td class='spaced'><span class='label'>Email: </span></td>"
-                + "<td class='spaced'><span class='contact-email'>"+c.getContact().getEmail()+"</span></td></tr>";
-        document += "<tr><td class='spaced'><span class='label'>Phone: </span></td>"
-                + "<td class='spaced'><span class='contact-phone'>"+c.getContact().getPhone()+"</span></td></tr>";
-        document += "</table>";
-        document += "<p class='default'>Date: "+format.format(c.getDate().getTime())+"</p>";
-        document += "<p class='default'>Hours: "+c.getHours()+"</p>";
-        document += c.getDetails()+"</body></html>";
-        System.out.println(document);
-        javafx.scene.web.WebView view = new javafx.scene.web.WebView();
-        view.setMaxSize((Double) settings.get("stageWidth")-20, (Double) settings.get("stageHeight")-35);
-        view.setLayoutX(10);
-        view.setLayoutY(25);
-        javafx.scene.web.WebEngine eng = view.getEngine();
-        eng.loadContent(document);
-        detailScreen.getChildren().add(view);
-        
-        Group backButton = new Group();
-        Rectangle backButtonBg = new Rectangle(6, 30);
-        backButtonBg.setStroke((Paint) settings.get("detailscreenButtonOutlinePaint"));
-        backButtonBg.setFill((Paint) settings.get("detailscreenButtonBGPaint"));
-        backButton.getChildren().add(backButtonBg);
-        Polygon homeButtonFg = new Polygon();
-        homeButtonFg.getPoints().addAll(0.0,2.0,3.0,0.0,3.0,4.0);
-        homeButtonFg.setFill((Paint) settings.get("detailscreenButtonFGPaint"));
-        homeButtonFg.setLayoutX(1.5); homeButtonFg.setLayoutY(13);
-        backButton.getChildren().add(homeButtonFg);
-        backButton.setLayoutX(2.5);
-        backButton.setLayoutY(((Double) settings.get("stageHeight") - 35)/2-15);
-        backButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-                root.getChildren().remove(detailScreen);
-                root.getChildren().add(mainScreen);
-                currState = "mainscreen";
-                updateWindowGraphics();
-            }
-        });
-        detailScreen.getChildren().add(backButton);
     }
     
     private void writeToFile (File f) {
