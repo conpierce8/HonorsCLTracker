@@ -43,13 +43,9 @@ public class MainScreen extends Group {
         init();
     }
     
-    public void updateTable(Year data) {
+    public void update(Year data) {
         this.data = data;
-        System.out.println("setting data to "+data.getYearString());
-        title.setText(this.data.getYearString());
-        layoutTitle();
-        table.getChildren().clear();
-        getTable();
+        update();
     }
     
     public void setHomeScreenRequestHandler(Handler h) {
@@ -356,6 +352,14 @@ public class MainScreen extends Group {
             });
         }
         return r;
+    }
+
+    public void update() {
+        System.out.println("setting data to "+data.getYearString());
+        title.setText(this.data.getYearString());
+        layoutTitle();
+        table.getChildren().clear();
+        getTable();
     }
     
 }

@@ -41,6 +41,7 @@ public class DataScreen extends Group {
     private ComboBox yearCombo;
     private TextField dateField, contactNameField, contactEmailField,
             contactPhoneField, shortDescField, hoursField;
+    private Button addActivity;
     private Text message;
     private HTMLEditor detailsField;
     
@@ -133,85 +134,12 @@ public class DataScreen extends Group {
         message.setFont(new javafx.scene.text.Font(16));
         v.getChildren().add(message);
         
-        Button addActivity = new Button("Add Comp Learning Event");
+        addActivity = new Button("Add Comp Learning Event");
         addActivity.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent arg0) {
-                ArrayList<String> missingFields = new ArrayList<>();
-                GregorianCalendar d = new GregorianCalendar();
-                String contactName = contactNameField.getText();
-                if(contactName == null) {
-                    contactName = "";
-                }
-                String contactEmail = contactEmailField.getText();
-                if(contactEmail == null) {
-                    contactEmail = "";
-                }
-                String contactPhone = contactPhoneField.getText();
-                if(contactPhone == null) {
-                    contactPhone = "";
-                }
-                String year = yearCombo.getValue().toString();
-                if(year == null) {
-                    missingFields.add("year");
-                }
-                String shortDesc = shortDescField.getText();
-                if(shortDesc == null) {
-                    shortDesc = "";
-                }
-                String details = detailsField.getHtmlText();
-                details = details.substring(details.indexOf("<body"));
-                details = details.substring(details.indexOf('>')+1, details.indexOf("</body"));
-                double hours;
-                int startYr;
-                try {
-                    hours = Double.parseDouble(hoursField.getText());
-                } catch(NumberFormatException ex) {
-                    hours = 0;
-                }
-                try{
-                    startYr = Integer.parseInt(year.substring(0, year.indexOf('-')));
-                } catch(NumberFormatException ex) {
-                    startYr = -1;
-                    missingFields.add("academic year");
-                }
-                try {
-                    d.setTime(Main.format.parse(dateField.getText()));
-                } catch(ParseException ex) {
-                    missingFields.add("date");
-                }
-                if(missingFields.size() > 0) {
-                    String error = "The following fields are required:";
-                    for(String s: missingFields) {
-                        error += " "+s+",";
-                    }
-                    error = error.substring(0, error.length()-1);
-                    message.setFill(Color.RED);
-                    message.setText(error);
-                    return;
-                }
-                CLActivity j = (owner == null)? new CLActivity() : owner;
-                Contact c = new Contact();
-                c.setEmail(contactEmail);
-                c.setName(contactName);
-                c.setPhone(contactPhone);
-                j.setContact(c);
-                j.setDate(d);
-                j.setDesc(shortDesc);
-                j.setDetails(details);
-                j.setHours(hours);
-                j.setStartYr(startYr);
-                if(startYr > 0) {
-                    if(owner == null) {
-                        newActivityHandler.action(j);
-                    } else {
-                        updateActivityHandler.action(j);
-                    }
-                    owner = null;
-                }
-                message.setText("Activity created successfully");
-                message.setFill(Color.GREEN);
+                buttonClicked();
             }
         });
         v.getChildren().add(addActivity);
@@ -239,11 +167,88 @@ public class DataScreen extends Group {
             }
         });
         backButton.setLayoutX((Double) settings.get("stageWidth") - 145);
-        backButton.setLayoutY((Double) settings.get("stageHeight") - 34);
+        backButton.setLayoutY((Double) settings.get("stageHeight") - 34.5);
         
         getChildren().add(scrollpane);
         getChildren().add(backButton);
         //TODO: data screen
+    }
+    
+    private void buttonClicked() {
+        ArrayList<String> missingFields = new ArrayList<>();
+        GregorianCalendar d = new GregorianCalendar();
+        String contactName = contactNameField.getText();
+        if(contactName == null) {
+            contactName = "";
+        }
+        String contactEmail = contactEmailField.getText();
+        if(contactEmail == null) {
+            contactEmail = "";
+        }
+        String contactPhone = contactPhoneField.getText();
+        if(contactPhone == null) {
+            contactPhone = "";
+        }
+        String year = yearCombo.getValue().toString();
+        if(year == null) {
+            missingFields.add("year");
+        }
+        String shortDesc = shortDescField.getText();
+        if(shortDesc == null) {
+            shortDesc = "";
+        }
+        String details = detailsField.getHtmlText();
+        details = details.substring(details.indexOf("<body"));
+        details = details.substring(details.indexOf('>')+1, details.indexOf("</body"));
+        double hours;
+        int startYr;
+        try {
+            hours = Double.parseDouble(hoursField.getText());
+        } catch(NumberFormatException ex) {
+            hours = 0;
+        }
+        try{
+            startYr = Integer.parseInt(year.substring(0, year.indexOf('-')));
+        } catch(NumberFormatException ex) {
+            startYr = -1;
+            missingFields.add("academic year");
+        }
+        try {
+            d.setTime(Main.format.parse(dateField.getText()));
+        } catch(ParseException ex) {
+            missingFields.add("date");
+        }
+        if(missingFields.size() > 0) {
+            String error = "The following fields are required:";
+            for(String s: missingFields) {
+                error += " "+s+",";
+            }
+            error = error.substring(0, error.length()-1);
+            message.setFill(Color.RED);
+            message.setText(error);
+            return;
+        }
+        CLActivity j = (owner == null)? new CLActivity() : owner;
+        Contact c = new Contact();
+        c.setEmail(contactEmail);
+        c.setName(contactName);
+        c.setPhone(contactPhone);
+        j.setContact(c);
+        j.setDate(d);
+        j.setDesc(shortDesc);
+        j.setDetails(details);
+        j.setHours(hours);
+        j.setStartYr(startYr);
+        if(startYr > 0) {
+            if(owner == null) {
+                newActivityHandler.action(j);
+            } else {
+                updateActivityHandler.action(j);
+            }
+        }
+        String action = (owner == null)?"created":"updated";
+        message.setText("Activity "+action+" successfully");
+        message.setFill(Color.GREEN);
     }
     
     public void setNewActivityHandler(Handler h) {
@@ -259,16 +264,28 @@ public class DataScreen extends Group {
     }
     
     public void setOwner(CLActivity owner) {
-        CLActivity c = (owner == null) ? new CLActivity() : owner;
-        yearCombo.setValue(owner.getYearString());
-        dateField.setText(Main.format.format(owner.getDate().getTime()));
-        contactNameField.setText(owner.getContact().getName());
-        contactEmailField.setText(owner.getContact().getEmail());
-        contactPhoneField.setText(owner.getContact().getPhone());
-        shortDescField.setText(owner.getDesc());
-        hoursField.setText(owner.getHours()+"");
-        detailsField.setHtmlText("<html><head></head><body>"+owner.getDetails()+
-                "</body></html>");
+        if(owner != null) {
+            yearCombo.setValue(owner.getYearString());
+            dateField.setText(Main.format.format(owner.getDate().getTime()));
+            contactNameField.setText(owner.getContact().getName());
+            contactEmailField.setText(owner.getContact().getEmail());
+            contactPhoneField.setText(owner.getContact().getPhone());
+            shortDescField.setText(owner.getDesc());
+            hoursField.setText(owner.getHours()+"");
+            detailsField.setHtmlText("<html><head></head><body>"+owner.getDetails()+
+                    "</body></html>");
+            addActivity.setText("Update Comp Learning Activity");
+        } else {
+            yearCombo.setValue("");
+            dateField.setText("");
+            contactNameField.setText("");
+            contactEmailField.setText("");
+            contactPhoneField.setText("");
+            shortDescField.setText("");
+            hoursField.setText("");
+            detailsField.setHtmlText("<html><head></head><body></body></html>");
+            addActivity.setText("Add Comp Learning Activity");
+        }
         this.owner = owner;
     }
     

@@ -91,7 +91,6 @@ public class Main extends Application {
     //</editor-fold>
     
     public static void main(String[] args) {
-        //load last configuration
         launch(args);
     }
     
@@ -107,7 +106,6 @@ public class Main extends Application {
     @Override
     public void start(final Stage primaryStage) {
         defaultSettings();
-        updateWindowGraphics();
 
         primaryStage.setTitle("FX RunningBuddy");
         primaryStage.initStyle(StageStyle.TRANSPARENT);
@@ -118,8 +116,12 @@ public class Main extends Application {
         //<editor-fold defaultstate="collapsed" desc="Initialize all the screens">
         getHomeScreen();
         mainScreen = new MainScreen(settings, new Year(currentYear));
+        mainScreen.setLayoutY(25);
         detailScreen = new DetailScreen(settings);
+//        detailScreen.setLayoutY(15);
         dataScreen = new DataScreen(settings, years);
+        dataScreen.setLayoutY(25);
+        dataScreen.setLayoutX(10);
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="Implement action handlers">
@@ -156,6 +158,43 @@ public class Main extends Application {
                 writeToFile(file);
             }
         });
+        mainScreen.setNextYearRequestHandler(new Handler() {
+            @Override
+            public void action(Object data) {
+                updateMainScreen( ((Year) data).getStartYear() + 1);
+            }
+        });
+        mainScreen.setPrevYearRequestHandler(new Handler() {
+            @Override
+            public void action(Object data) {
+                updateMainScreen( ((Year) data).getStartYear() - 1);
+            }
+        });
+        dataScreen.setMainScreenRequestHandler(new Handler() {
+            @Override
+            public void action(Object data) {
+                switchScreens("datascreen", "mainscreen");
+            }
+        });
+        dataScreen.setNewActivityHandler(new Handler() {
+            @Override
+            public void action(Object data) {
+                CLActivity c = (CLActivity) data;
+                years.addData(c);
+            }
+        });
+        dataScreen.setUpdateActivityHandler(new Handler() {
+            @Override
+            public void action(Object data) {
+                mainScreen.update();
+            }
+        });
+        detailScreen.setMainScreenRequestHandler(new Handler() {
+            @Override
+            public void action(Object data) {
+                switchScreens("detailscreen", "mainscreen");
+            }
+        });
         //</editor-fold>
         
         root.getChildren().add(homeScreen);
@@ -164,6 +203,14 @@ public class Main extends Application {
         scene.setFill(new Color(0,0,0,0));
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+    
+    private void updateMainScreen(int newYear) {
+        if(years.indexOf(newYear) != -1) {
+            mainScreen.update(years.get(years.indexOf(newYear)));
+        } else {
+            mainScreen.update(new Year(newYear));
+        }
     }
     
     private void switchScreens(String from, String to) {
@@ -180,20 +227,19 @@ public class Main extends Application {
             case "homescreen": root.getChildren().add(homeScreen); break;
         }
         currState = to;
-        updateWindowGraphics();
+        windowBGPaint.setValue((Paint) settings.get(currState+"BGPaint"));
+        windowBGStroke.setValue((Paint) settings.get(currState+"BGStroke"));
+        windowButtonBG.setValue((Paint) settings.get(currState+"WindowButtonBGPaint"));
+        windowButtonFG.setValue((Paint) settings.get(currState+"WindowButtonFGPaint"));
     }
     
     private void createNewFile(String fileName) {
         file = new File(fileName);
-        defaultSettings();
         if(mainScreen == null) {
             mainScreen = new MainScreen(settings, new Year(currentYear));
         }
         mainScreen.setLayoutY(25);
-        root.getChildren().remove(homeScreen);
-        root.getChildren().add(mainScreen);
-        currState = "mainscreen";
-        updateWindowGraphics();
+        switchScreens("homescreen", "mainscreen");
     } 
     
     private void defaultSettings() {
@@ -240,6 +286,10 @@ public class Main extends Application {
         settings.put("scrollbarFGPaint", new Color(1, .5, 0, 1));
         settings.put("scrollbarFGStroke", Color.BLACK);
         settings.put("scrollbarBGPaint", new Color(1, 1, 1, .4));
+        windowBGPaint.setValue((Paint) settings.get("homescreenBGPaint"));
+        windowBGStroke.setValue((Paint) settings.get("homescreenBGStroke"));
+        windowButtonBG.setValue((Paint) settings.get("homescreenWindowButtonBGPaint"));
+        windowButtonFG.setValue((Paint) settings.get("homescreenWindowButtonFGPaint"));
     }
     
     private void getHomeScreen() {
@@ -350,7 +400,6 @@ public class Main extends Application {
 
             @Override
             public void handle(MouseEvent arg0) {
-//                System.out.println("Minimizing");
                 primaryStage.toBack();
             }
         });
@@ -393,278 +442,15 @@ public class Main extends Application {
     
     private void openExistingFile(String fileName) throws ParseException {
         file = new File(fileName);
-        defaultSettings();
         loadFromFile(file);
         if(years.indexOf(currentYear) >= 0) {
-            mainScreen.updateTable(years.get(years.indexOf(currentYear)));
+            mainScreen.update(years.get(years.indexOf(currentYear)));
         } else {
-            mainScreen.updateTable(new Year(currentYear));
+            mainScreen.update(new Year(currentYear));
         }
-        mainScreen.setLayoutY(25);
-        root.getChildren().remove(homeScreen);
-        root.getChildren().add(mainScreen);
-        currState = "mainscreen";
-        updateWindowGraphics();
+        switchScreens("homescreen", "mainscreen");
     }
-    
-    private String getYearString(int year) {
-        String s = year+"-";
-        s += (year + 1) % 100;
-        return s;
-    }
-    
-    private void updateDisplay() {
-        mainScreen.getChildren().remove(title);
-        title = new Text(getYearString(currentYear));
-        title.setFont((Font) settings.get("mainscreenLabelFont"));
-        title.setFill((Paint) settings.get("mainscreenLabelPaint"));
-        title.setLayoutX(((Double) settings.get("stageWidth")-title.getBoundsInParent().getWidth())/2);
-        title.setLayoutY(tableY - 10);
-        mainScreen.getChildren().add(title);
-        
-        mainScreen.getChildren().remove(table);
-        table = getTable();
-        table.setLayoutY(tableY); table.setLayoutX(10);
-        mainScreen.getChildren().add(table);
-    }
-    
-    private void updateWindowGraphics() {
-        windowBGPaint.setValue((Paint) settings.get(currState+"BGPaint"));
-        windowBGStroke.setValue((Paint) settings.get(currState+"BGStroke"));
-        windowButtonBG.setValue((Paint) settings.get(currState+"WindowButtonBGPaint"));
-        windowButtonFG.setValue((Paint) settings.get(currState+"WindowButtonFGPaint"));
-    }
-    
-    //<editor-fold defaultstate="collapsed" desc=" Get Table ">
-    private Node getTable() {
-        Group tempTable = new Group();
-        
-        Year yr = new Year(currentYear);
-        int yearIdx = years.indexOf(yr);
-        if(yearIdx >= 0) {
-            yr = years.get(yearIdx);
-        }
-        
-        final Object[][] data = new Object[4][yr.getSize()];
-        int row = 0;
-        Group dataRows = new Group();
-        Text asdf = new Text("T");
-        asdf.setFont((Font) settings.get("tableDataTextFont"));
-        double rowHeight = asdf.getBoundsInParent().getHeight() + 4;
-        for(String s : yr.getAllDescs()) {
-            int count = 0;
-            for(CLActivity c : yr.getCLActivities(s)) {
-                if(count == 0) {
-                    data[0][row] = s;
-                }
-                data[1][row] = format.format(c.getDate().getTime());
-                data[2][row] = c.getContact().getName();
-                data[3][row] = c.getHours();
-                dataRows.getChildren().add(getTableRowRect(row,rowHeight, c));
-                count ++;
-                row ++;
-            }
-        }
-        
-        final double stageWidth = (Double) settings.get("stageWidth");
-        
-        Group c2 = getColumn(data[1], rowHeight, -1);
-        Text c2Head = new Text("Date");
-        c2Head.setTextOrigin(VPos.CENTER); 
-        c2Head.setFont((Font) settings.get("tableHeaderTextFont"));
-        c2Head.setFill((Paint) settings.get("tableHeaderTextPaint"));
-        double c2Width = Math.max(c2.getBoundsInParent().getWidth(),
-                c2Head.getBoundsInParent().getWidth())+10;
-        
-        final double headerRowHeight = c2Head.getBoundsInParent().getHeight()+10;
-        Rectangle headerBG = new Rectangle(0, 0, stageWidth-20, headerRowHeight);
-        headerBG.setArcHeight(headerRowHeight/2);
-        headerBG.setArcWidth(headerRowHeight/2);
-        headerBG.setFill((Paint) settings.get("tableHeaderBGPaint"));
-        tempTable.getChildren().add(headerBG);
-        
-        Group c3 = getColumn(data[2], rowHeight, -1);
-        Text c3Head = new Text("Contact");
-        c3Head.setTextOrigin(VPos.CENTER); 
-        c3Head.setFont((Font) settings.get("tableHeaderTextFont"));
-        c3Head.setFill((Paint) settings.get("tableHeaderTextPaint"));
-        double c3Width = Math.max(c3.getBoundsInParent().getWidth(),
-                c3Head.getBoundsInParent().getWidth())+10;
-        
-        Group c4 = getColumn(data[3], rowHeight, -1);
-        Text c4Head = new Text("Hours");
-        c4Head.setTextOrigin(VPos.CENTER); 
-        c4Head.setFont((Font) settings.get("tableHeaderTextFont"));
-        c4Head.setFill((Paint) settings.get("tableHeaderTextPaint"));
-        double c4Width = Math.max(c4.getBoundsInParent().getWidth(),
-                c4Head.getBoundsInParent().getWidth())+10;
-        
-        Group c1 = getColumn(data[0], rowHeight, stageWidth-20-c2Width-c3Width-c4Width);
-        Text c1Head = new Text("Desc");
-        c1Head.setFont((Font) settings.get("tableHeaderTextFont"));
-        c1Head.setFill((Paint) settings.get("tableHeaderTextPaint"));
-        double c1Width = Math.max(c1.getBoundsInParent().getWidth(),
-                c1Head.getBoundsInParent().getWidth())+10;
-        c1Head.setTextOrigin(VPos.CENTER);
-        
-        if(row > 0) {
-            c1Head.setLayoutX(10);
-            c1Head.setLayoutY(headerRowHeight / 2);
-            tempTable.getChildren().add(c1Head);
-            c2Head.setLayoutX(c1Width+10);
-            c2Head.setLayoutY(headerRowHeight / 2);
-            tempTable.getChildren().add(c2Head);
-            c3Head.setLayoutX(c1Width+c2Width+10);
-            c3Head.setLayoutY(headerRowHeight / 2);
-            tempTable.getChildren().add(c3Head);
-            c4Head.setLayoutX(c1Width+c2Width+c3Width+10);
-            c4Head.setLayoutY(headerRowHeight / 2);
-            tempTable.getChildren().add(c4Head);
-        }
-        
-        c1.setLayoutX(10);
-        c2.setLayoutX(c1Width+10);
-        c3.setLayoutX(c1Width+c2Width+10);
-        c4.setLayoutX(c1Width+c2Width+c3Width+10);
-        dataRows.getChildren().add(c1);
-        dataRows.getChildren().add(c2);
-        dataRows.getChildren().add(c3);
-        dataRows.getChildren().add(c4);
-        dataRows.setLayoutY(headerRowHeight+5);
-        tempTable.getChildren().add(dataRows);
-        
-        final double availableSpace = ((Double) settings.get("stageHeight")) - tableY - headerRowHeight - 35;
-        Group scrollBar = getScrollbar(availableSpace, 5, 0, dataRows,headerRowHeight);
-        scrollBar.setLayoutX(stageWidth-20-((Double)settings.get("scrollbarWidth")));
-        scrollBar.setLayoutY(headerRowHeight);
-        tempTable.getChildren().add(scrollBar);
-        //TODO: table scroll bar
-        return tempTable;
-    }
-    
-    private Group getColumn(Object[] data, double rowHeight, double maxWidth) {
-        //TODO: no header -- put that in getTable so that it is unaffected by scrollbar
-        Group col = new Group();
-        
-        double y = 0;
-        for(Object o : data) {
-            Text rowData = new Text((o==null)?"":o.toString());
-            rowData.setTextOrigin(VPos.CENTER);
-            rowData.setFont((Font) settings.get("tableDataTextFont"));
-            rowData.setFill((Paint) settings.get("tableDataTextPaint"));
-            rowData.setLayoutY(y+rowHeight/2);
-            double dataWidth = rowData.getBoundsInParent().getWidth();
-            if(maxWidth > 0 && dataWidth > maxWidth - 4) {
-                double percent = (maxWidth < 4) ? 0 : ((maxWidth - 4) / dataWidth);
-                String newData = o.toString();
-                newData = newData.substring(0, (int) (newData.length()*percent) - 4);
-                newData += "...";
-                rowData.setText(newData);
-            }
-            col.getChildren().add(rowData);
-            y += rowHeight;
-        }
-        return col;
-    }
-    
-    private Group getScrollbar(final double availableSpace, final double topPad, 
-            double bottomPad, final Node n, final double minClipY) {
-        Group group = new Group();
-        
-        final double scrollbarWidth = (Double) settings.get("scrollbarWidth");
-//        System.out.println("stageHeight:"+(Double) settings.get("stageHeight"));
-//        System.out.println("avail: "+availableSpace);
-        final double height = n.getBoundsInLocal().getHeight() + topPad + bottomPad;
-//        System.out.println("Available:"+availableSpace+", dataHeight="+height);
-        double scrollSpace = availableSpace - scrollbarWidth;
-        final double barHeight = Math.max(scrollbarWidth, scrollSpace*Math.min(1, availableSpace/height));
-        
-        Polygon scrollBarBG = new Polygon();
-        scrollBarBG.getPoints().addAll(0.0,scrollbarWidth/2, 0.0, scrollSpace-scrollbarWidth/2,
-                scrollbarWidth/2, scrollSpace, scrollbarWidth, scrollSpace-scrollbarWidth/2,
-                scrollbarWidth, scrollbarWidth/2, scrollbarWidth/2, 0.0);
-        scrollBarBG.setFill((Paint) settings.get("scrollbarBGPaint"));
-        scrollBarBG.relocate(0, scrollbarWidth/2);
-        group.getChildren().add(scrollBarBG);
-        
-        Polygon topBox = new Polygon();
-        topBox.getPoints().addAll(0.0,0.0,0.0,scrollbarWidth-2, scrollbarWidth/2-1, scrollbarWidth/2-1,
-                scrollbarWidth-2, scrollbarWidth-2, scrollbarWidth-2,0.0);
-        topBox.setFill((Paint) settings.get("scrollbarFGPaint"));
-        topBox.setStroke((Paint) settings.get("scrollbarFGStroke"));
-        topBox.relocate(0 ,0);
-        group.getChildren().add(topBox);
-        
-        Polygon bottomBox = new Polygon();
-        bottomBox.getPoints().addAll(0.0,0.0,0.0,scrollbarWidth-2, scrollbarWidth-2, scrollbarWidth-2,
-                scrollbarWidth-2,0.0, scrollbarWidth/2-1, scrollbarWidth/2-1);
-        bottomBox.setFill((Paint) settings.get("scrollbarFGPaint"));
-        bottomBox.setStroke((Paint) settings.get("scrollbarFGStroke"));
-        bottomBox.relocate(0, availableSpace-scrollbarWidth-1);
-        group.getChildren().add(bottomBox);
-        
-        final Polygon bar = new Polygon();
-        bar.getPoints().addAll(0.0,scrollbarWidth/2-1, 0.0, barHeight-scrollbarWidth/2,
-                scrollbarWidth/2-1, barHeight-1, scrollbarWidth-2, barHeight-scrollbarWidth/2,
-                scrollbarWidth-2, scrollbarWidth/2-1, scrollbarWidth/2-1, 0.0);
-        bar.setFill((Paint) settings.get("scrollbarFGPaint"));
-        bar.setStroke((Paint) settings.get("scrollbarFGStroke"));
-        bar.relocate(0, scrollbarWidth/2-1);
-        
-        bar.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent arg0) {
-//                System.out.println("Bar is at: "+bar.getLayoutY());
-                scrollStartY = arg0.getSceneY() - bar.getLayoutY();
-//                System.out.println("translateStartY="+translateStartY);
-            }
-        });
-        
-        final Rectangle clip = new Rectangle(0, 0, n.getBoundsInLocal().getWidth(), availableSpace-topPad-bottomPad);
-//        clip.setLayoutY(minClipY+topPad);
-        n.setClip(clip);
-        bar.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent arg0) {
-                double minY = scrollbarWidth/2;
-                double maxY = availableSpace-scrollbarWidth/2;
-                double newY = Math.max(minY, Math.min(arg0.getSceneY() - scrollStartY, maxY-barHeight));
-//                System.out.println("min:"+minY+", max:"+maxY+", val:"+newY);
-                bar.setLayoutY(newY);
-                double newClipY = ((newY-minY)/(maxY-minY))*height;
-                clip.setLayoutY(/*minClipY+topPad+*/newClipY);
-//                System.out.println("\tclip="+dataRows.getClip().getLayoutY());
-                n.setLayoutY(minClipY+topPad-newClipY);
-            }
-        });
-        group.getChildren().add(bar);
-        return group;
-    }
-    
-    private Rectangle getTableRowRect(int row, double dataRowHeight, final CLActivity c) {
-        Rectangle r = new Rectangle();
-        r.setWidth((Double) settings.get("stageWidth") - 20 - (Double) settings.get("scrollbarWidth"));
-        r.setHeight(dataRowHeight);
-        r.setArcHeight(dataRowHeight/2);
-        r.setArcWidth(dataRowHeight/2);
-        r.setFill( (row%2==0)
-                ?(Paint) settings.get("tableRow1BGPaint")
-                :(Paint) settings.get("tableRow2BGPaint") );
-        r.setLayoutX(0); r.setLayoutY(row*dataRowHeight);
-        r.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
-            @Override
-            public void handle(MouseEvent event) {
-                currState = "detailscreen";
-                getDetailScreen(c);
-                root.getChildren().remove(mainScreen);
-                root.getChildren().add(detailScreen);
-                updateWindowGraphics();
-            }
-        });
-        return r;
-    }
-    
     private void writeToFile (File f) {
         try(java.io.PrintWriter p = new java.io.PrintWriter(f)) {
             for(Year y : years) {

@@ -93,5 +93,9 @@ public class Year {
             return value;
         }
     }
+
+    public int getStartYear() {
+        return startYr;
+    }
     
 }
