@@ -400,7 +400,8 @@ public class Main extends Application {
 
             @Override
             public void handle(MouseEvent arg0) {
-                primaryStage.toBack();
+                primaryStage.getOwner().hide();
+//                primaryStage.toBack();
             }
         });
         wdw.getChildren().add(minimizeButton);
