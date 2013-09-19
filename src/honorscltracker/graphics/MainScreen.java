@@ -2,8 +2,12 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package honorscltracker;
+package honorscltracker.graphics;
 
+import honorscltracker.CLActivity;
+import honorscltracker.Handler;
+import honorscltracker.Main;
+import honorscltracker.Year;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import javafx.event.EventHandler;

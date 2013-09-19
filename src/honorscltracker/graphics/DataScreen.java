@@ -2,8 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package honorscltracker;
+package honorscltracker.graphics;
 
+import honorscltracker.CLActivity;
+import honorscltracker.Contact;
+import honorscltracker.Handler;
+import honorscltracker.Main;
+import honorscltracker.YearList;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -34,7 +39,7 @@ import javafx.scene.web.HTMLEditor;
 public class DataScreen extends Group {
     private CLActivity owner;
     private HashMap<String, Object> settings;
-    private String labelStyle = "-fx-text-fill:white;";
+    private String labelStyle = "-fx-text-fill:white;-fx-font-weight:bold;";
     
     private Handler newActivityHandler, updateActivityHandler, mainRequestedHandler;
     

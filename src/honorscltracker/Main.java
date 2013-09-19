@@ -1,5 +1,8 @@
 package honorscltracker;
 
+import honorscltracker.graphics.DetailScreen;
+import honorscltracker.graphics.MainScreen;
+import honorscltracker.graphics.DataScreen;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -7,11 +10,13 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
@@ -19,7 +24,9 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.*;
@@ -30,6 +37,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.web.HTMLEditor;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -73,6 +81,7 @@ public class Main extends Application {
     private MainScreen mainScreen;
     private DataScreen dataScreen;
     private DetailScreen detailScreen;
+    private FileChooser fileChooser;
     private Group root;
     private Node table;
     private Text title;
@@ -114,7 +123,8 @@ public class Main extends Application {
         root.getChildren().add(getWindow(primaryStage)); //window graphics
         
         //<editor-fold defaultstate="collapsed" desc="Initialize all the screens">
-        getHomeScreen();
+        fileChooser = new FileChooser();
+        getHomeScreen(primaryStage);
         mainScreen = new MainScreen(settings, new Year(currentYear));
         mainScreen.setLayoutY(25);
         detailScreen = new DetailScreen(settings);
@@ -155,6 +165,9 @@ public class Main extends Application {
         mainScreen.setSaveRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
+                if(file == null) {
+                    file = fileChooser.showSaveDialog(primaryStage);
+                }
                 writeToFile(file);
             }
         });
@@ -233,15 +246,6 @@ public class Main extends Application {
         windowButtonFG.setValue((Paint) settings.get(currState+"WindowButtonFGPaint"));
     }
     
-    private void createNewFile(String fileName) {
-        file = new File(fileName);
-        if(mainScreen == null) {
-            mainScreen = new MainScreen(settings, new Year(currentYear));
-        }
-        mainScreen.setLayoutY(25);
-        switchScreens("homescreen", "mainscreen");
-    } 
-    
     private void defaultSettings() {
         settings.put("homescreenBGPaint", Color.BLACK);
         settings.put("homescreenBGStroke", new Color(1,.5,0,.8));
@@ -261,7 +265,7 @@ public class Main extends Application {
         settings.put("mainscreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("homescreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("datascreenWindowButtonBGPaint", Color.TRANSPARENT);
-        settings.put("detailscreenWindowButtonBGPaint", Color.LIGHTGRAY);
+        settings.put("detailscreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("mainscreenLabelPaint", Color.WHITE);
         settings.put("mainscreenLabelFont", new Font("Arial", 30));
         settings.put("tableDataTextPaint", Color.BLACK);
@@ -285,28 +289,77 @@ public class Main extends Application {
         settings.put("scrollbarWidth", 10.0);
         settings.put("scrollbarFGPaint", new Color(1, .5, 0, 1));
         settings.put("scrollbarFGStroke", Color.BLACK);
-        settings.put("scrollbarBGPaint", new Color(1, 1, 1, .4));
+        settings.put("scrollbarBGPaint", new Color(1, 1, 1, 1));
         windowBGPaint.setValue((Paint) settings.get("homescreenBGPaint"));
         windowBGStroke.setValue((Paint) settings.get("homescreenBGStroke"));
         windowButtonBG.setValue((Paint) settings.get("homescreenWindowButtonBGPaint"));
         windowButtonFG.setValue((Paint) settings.get("homescreenWindowButtonFGPaint"));
     }
     
-    private void getHomeScreen() {
+    private void getHomeScreen(final Stage primaryStage) {
         homeScreen = new VBox();
         homeScreen.setSpacing(20);
         homeScreen.setAlignment(Pos.CENTER);
         Text t = new Text("Welcome to the Honors\n"
                 + "Comp Learning tracker!\n"
-                + "Please enter file name and choose an action:");
+                + "If you have an existing file, enter its name or click Choose,\n"+
+                "then click Open.  If you have not used Comp Learning Tracker\n"+
+                "before, click New.");
         t.setTextAlignment(TextAlignment.CENTER);
         t.setFont((Font) settings.get("homescreenTextFont"));
         t.setFill((Paint) settings.get("homescreenTextPaint"));
         homeScreen.getChildren().add(t);
         
+        HBox fileBox = new HBox();
+        fileBox.setAlignment(Pos.CENTER);
+        fileBox.setSpacing(20);
         final TextField f = new TextField("Enter file name here");
         f.setAlignment(Pos.BASELINE_CENTER);
-        homeScreen.getChildren().add(f);
+        f.setPrefColumnCount(50);
+        f.setOnDragOver(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                event.acceptTransferModes(TransferMode.LINK);
+            }
+        });
+        f.setOnDragDropped(new EventHandler<DragEvent>() {
+
+            @Override
+            public void handle(DragEvent event) {
+                if(event.getDragboard().hasFiles()) {
+                    List<File> files = event.getDragboard().getFiles();
+                    if(files.size() > 1) {
+                        f.setText("Please select only one file!");
+                        f.setAlignment(Pos.CENTER);
+                        event.consume();
+                        return;
+                    }
+                    try {
+                        openExistingFile(files.get(0).getAbsolutePath());
+                    } catch(ParseException ex) {
+                        f.setText("Could not open file; "+ex.getMessage());
+                        f.setAlignment(Pos.CENTER);
+                    } finally {
+                        event.consume();
+                    }
+                }
+            }
+        });
+        fileBox.getChildren().add(f);
+        Button chooseButton = new Button("Choose...");
+        chooseButton.setOnAction(new EventHandler() {
+
+            @Override
+            public void handle(Event event) {
+                File temp = fileChooser.showOpenDialog(primaryStage);
+                if(temp != null) {
+                    f.setText(temp.getAbsolutePath());
+                }
+            }
+        });
+        fileBox.getChildren().add(chooseButton);
+        homeScreen.getChildren().add(fileBox);
         
         HBox buttonBox = new HBox();
         buttonBox.setAlignment(Pos.CENTER);
@@ -316,7 +369,11 @@ public class Main extends Application {
 
             @Override
             public void handle(ActionEvent arg0) {
-                createNewFile(f.getText());
+                if(mainScreen == null) {
+                    mainScreen = new MainScreen(settings, new Year(currentYear));
+                }
+                mainScreen.setLayoutY(25);
+                switchScreens("homescreen", "mainscreen");
             }
         });
         buttonBox.getChildren().add(b);
