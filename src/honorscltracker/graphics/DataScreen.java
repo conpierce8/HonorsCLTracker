@@ -13,6 +13,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.TreeSet;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -50,7 +51,15 @@ public class DataScreen extends Group {
     private Text message;
     private HTMLEditor detailsField;
     
-    public DataScreen(HashMap<String, Object> prefs, YearList years) {
+    /**
+     * Creates a new DataScreen class, which is a GUI for entering complementary
+     * learning activities into this program.
+     * @param prefs the GUI preferences
+     * @param years years for which the user's has previous comp learning 
+     * activities.  Used for initializing 'year' combo box. Should be obtained
+     * from <code>honorscltracker.YearList.getYearList()</code>
+     */
+    public DataScreen(HashMap<String, Object> prefs, TreeSet<String> years) {
         // By default, we're not editing anything an activity; we're creating
         // a new one (i.e. 'owner' is null)
         owner = null;
@@ -58,13 +67,16 @@ public class DataScreen extends Group {
         init(years);
     }
     
-    private void init(YearList years) {
+    /*
+     * Initializes and lays out the data input elements.
+     */
+    private void init(TreeSet<String> years) {
         VBox v = new VBox();
         v.setMaxWidth((Double) settings.get("stageWidth")-35);
         v.setSpacing(10);
         
         yearCombo = new ComboBox();
-        yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years.getYearsList()));
+        yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years));
         yearCombo.setEditable(true);
         yearCombo.setPrefHeight(25);
         yearCombo.setPrefWidth(100);
@@ -176,9 +188,11 @@ public class DataScreen extends Group {
         
         getChildren().add(scrollpane);
         getChildren().add(backButton);
-        //TODO: data screen
     }
     
+    /*
+     * The function that is called when the submit button is clicked.
+     */
     private void buttonClicked() {
         ArrayList<String> missingFields = new ArrayList<>();
         GregorianCalendar d = new GregorianCalendar();
@@ -256,18 +270,67 @@ public class DataScreen extends Group {
         message.setFill(Color.GREEN);
     }
     
+    /**
+     * Sets the handler to be called when a new comp learning activity is
+     * created.  This occurs when user clicks the "Add Comp Learning Event"
+     * button, all required fields are filled, and the <code>DataScreen</code>
+     * was was opened in 'new activity' mode (as opposed to 'edit activity'
+     * mode).  The handler's <code>action(Object)</code> method will be called
+     * and the newly created activity will be passed to the <code>data</code>
+     * parameter.
+     * @param h The handler to be called when a new activity is created
+     */
     public void setNewActivityHandler(Handler h) {
         newActivityHandler = h;
     }
     
+    /**
+     * Sets the handler to be called when a comp learning activity is edited.
+     * This occurs when user clicks the "Add Comp Learning Event"
+     * button, all required fields are filled, and the <code>DataScreen</code>
+     * was was opened in 'edit activity' mode.  The handler's 
+     * <code>action(Object)</code> method will be called and the edited
+     * activity will be passed to the <code>data</code> parameter.  The
+     * <code>CLActivity</code> that is passed is a separate object from the
+     * original.
+     * @param h The handler to be called when the activity is updated
+     */
     public void setUpdateActivityHandler(Handler h) {
         updateActivityHandler = h;
     }
     
+    /**
+     * Set the <code>Handler</code> to be called when the user clicks the
+     * 'return to main screen' button.  The handler's <code>action</code>
+     * method is called and <code>null</code> is passed as the <code>data</code>
+     * parameter.
+     * @param h the <code>Handler</code> to be called when the 'return to main
+     * screen' button is clicked
+     */
     public void setMainScreenRequestHandler(Handler h) {
         mainRequestedHandler = h;
     }
     
+    /**
+     * Sets the <code>CLActivity</code> that is to be the 'owner' of this
+     * data screen.  When the owner is set, the input elements on the data
+     * screen are updated to reflect the data in the <code>CLActivity</codee>.
+     * When the owner is set, any changes to the data are considered edits to 
+     * the owning <code>CLActivity</code>, and the <code>Handler</code> set by
+     * <code>setUpdateActivityHandler</code> will be called when the user clicks
+     * the submit button.
+     * 
+     * To clear the owner of this data screen, pass <code>null</code> to this
+     * function.  The owning <code>CLActivity</code> will be cleared, as well as
+     * the content of the data input fields.  When the user clicks the submit
+     * button, a new <code>CLActivity</code> will be created, and the
+     * <code>Handler</code> set by the <code>setNewActivityHandler</code> will
+     * be called.
+     * @param owner the <code>CLActivity<code> that is to become the 'owner' of\
+     * this data screen, or <code>null</code> to clear the owner
+     * @see setUpdateActivtyHandler
+     * @see setNewActivityHandler
+     */
     public void setOwner(CLActivity owner) {
         if(owner != null) {
             yearCombo.setValue(owner.getYearString());

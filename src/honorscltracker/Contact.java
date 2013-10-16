@@ -1,12 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package honorscltracker;
 
 /**
- *
- * @author Connor
+ * Describes contact information for comp learning activities.  Includes name,
+ * email, and phone number.
+ * @author Connor Pierce
  */
 public class Contact {
     
@@ -70,5 +67,4 @@ public class Contact {
         this.phone = phone;
     }
 
-    
 }

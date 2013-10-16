@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package honorscltracker.graphics;
 
 import java.util.HashMap;
@@ -14,20 +10,43 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 
 /**
- *
- * @author Connor
+ * Defines a scrollbar for the table on the main screen.
+ * @author Connor Pierce
  */
 public class Scrollbar extends Group {
     private double availableSpace, topPad, bottomPad, minClipY, scrollStartY;
     private Node n;
     private final HashMap<String, Object> settings;
     
+    /**
+     * Creates a new scrollbar that controls the display of the given node. The
+     * node is scrolled by adjusting the clipping rectangle and vertical
+     * position.
+     * <p>The following is a (somewhat) graphical representation of the
+     * numerical parameters governing scrollbars:<br/>
+     * <img src="scrollbarparams.png" width="400" height="300"></img><br/>
+     * Note that adding padding via <code>topPad</code> and 
+     * <code>bottomPad</code> will decrease the space available for actual
+     * display of the node.
+     * </p>
+     * @param availableSpace the vertical space available in which to display
+     * the given node
+     * @param topPad padding within the available space, below which the clipped
+     * node will be placed. <code>topPad &lt; 0</code> will be treated as 0.
+     * @param bottomPad padding within the available space, above which the
+     * clipped node will be placed. <code>bottomPad &lt; 0</code> will be
+     * treated as 0.
+     * @param n the node to be controlled by this scrollbar
+     * @param minClipY layoutY for the top of the scrollbar. The top of the
+     * clipped node will be displayed at <code>layoutY=minClipY+topPad</code>
+     * @param settings GUI settings governing the appearance of the scrollbar
+     */
     public Scrollbar(final double availableSpace, final double topPad, 
             double bottomPad, final Node n, final double minClipY,
             HashMap<String, Object> settings) {
         this.availableSpace = availableSpace;
-        this.topPad = topPad;
-        this.bottomPad = bottomPad;
+        this.topPad = Math.max(topPad, 0);
+        this.bottomPad = Math.max(bottomPad, 0);
         this.n = n;
         this.minClipY = minClipY;
         this.settings = settings;
@@ -35,7 +54,12 @@ public class Scrollbar extends Group {
         init();
     }
     
-    private void init() {    
+    /*
+     * Initializes the scrollbar. I'm honestly not sure how this works at this
+     * point, but it does work (and it took me a long time to figure out how to
+     * make it work) so I'm not going to mess around with it.
+     */
+    private void init() {
         final double scrollbarWidth = (Double) settings.get("scrollbarWidth");
         final double height = n.getBoundsInLocal().getHeight() + topPad + bottomPad;
         double scrollSpace = availableSpace - scrollbarWidth;
@@ -97,6 +121,14 @@ public class Scrollbar extends Group {
         getChildren().add(bar);
     }
     
+    /**
+     * Sets the node controlled by this scrollbar. The scrollbar is
+     * reinitialized to reflect the size of the new node. <strong>Parameters
+     * governing the size of the scrollbar (availableSpace, topPad, bottomPad,
+     * minClipY) remain unchanged.<strong>
+     * @param n the new node to be controlled by this scrollbar
+     * @see #Scrollbar(double,double,double,Node,double,HashMap)
+     */
     public void setNode(Node n) {
         this.n = n;
         getChildren().clear();

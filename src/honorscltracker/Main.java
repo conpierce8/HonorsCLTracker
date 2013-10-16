@@ -1,8 +1,8 @@
 package honorscltracker;
 
+import honorscltracker.graphics.DataScreen;
 import honorscltracker.graphics.DetailScreen;
 import honorscltracker.graphics.MainScreen;
-import honorscltracker.graphics.DataScreen;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -19,7 +20,6 @@ import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -36,7 +36,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import javafx.scene.web.HTMLEditor;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -47,14 +46,14 @@ import javafx.stage.StageStyle;
  * graphics of this application are fully customizable, with preferences for
  * each user stored in that user's file.
  * 
- * <h1>Home Screen</h1>
+ * <strong>Home Screen</strong>
  * When the application is running in this state, no file is opened and no
  * workout data is in memory. The window displays a choice of options to the
  * user: create a new file or open an existing file. The background of the
  * window is defined by the preference <code>homescreenBGPaint</code> and the
  * outline is defined by the preference <code>homescreenBGStroke</code>
  * 
- * <h1>Main Screen</h1>
+ * <strong>Main Screen</strong>
  * When the application is running in this state, a file is active, and data is
  * stored in memory. The window displays the user's workout data in a table, by
  * month. The application keeps track of the month and year being displayed, and
@@ -63,7 +62,7 @@ import javafx.stage.StageStyle;
  * and the outline is defined by the preference <code>homescreenBGStroke</code>.
  * </code>.
  * 
- * <h1>Data Screen</h1>
+ * <strong>Data Screen</strong>
  * When the application is running in this state, a file is active, and the user
  * is being asked to input data. The background of the window is defined by the
  * preference <code>datascreenBGPaint</code> and the outline is defined by the
@@ -97,12 +96,22 @@ public class Main extends Application {
     private File file;
     
     private double dragOffsetX = 0, dragOffsetY = 0, scrollStartY, translateStartY;
+    
+    private Stack<UserAction> undo, redo;
     //</editor-fold>
     
+    /**
+     * The main method for the HonorsCLTracker program.
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         launch(args);
     }
     
+    /**
+     * Creates a new Main class. This class is the manager for all the screens
+     * in the HonorsCLTracker program.
+     */
     public Main() {
         GregorianCalendar c = new GregorianCalendar();
         if(c.get(Calendar.MONTH) < 5) {
@@ -129,12 +138,14 @@ public class Main extends Application {
         mainScreen.setLayoutY(25);
         detailScreen = new DetailScreen(settings);
 //        detailScreen.setLayoutY(15);
-        dataScreen = new DataScreen(settings, years);
+        dataScreen = new DataScreen(settings, years.getYearsList());
         dataScreen.setLayoutY(25);
         dataScreen.setLayoutX(10);
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="Implement action handlers">
+        //user is on mainScreen, wants the dataScreen to be shown (i.e. clicks
+        //on the button to show the dataScreen
         mainScreen.setDataScreenRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
@@ -142,6 +153,9 @@ public class Main extends Application {
                 switchScreens("mainscreen", "datascreen");
             }
         });
+        
+        //user is on the mainScreen, wants detailScreen for a particular
+        //activity (clicks on an activity in the table)
         mainScreen.setDetailRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
@@ -149,6 +163,9 @@ public class Main extends Application {
                 switchScreens("mainscreen", "detailscreen");
             }
         });
+        
+        //user is on the mainScreen, wants dataScreen to edit an activity (right
+        //clicks on activity in the table)
         mainScreen.setEditCLActivityRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
@@ -156,12 +173,17 @@ public class Main extends Application {
                 switchScreens("mainscreen", "datascreen");
             }
         });
+        
+        //user is on the mainScreen, wants to see the homeScreen (clicks on the
+        //homeScreen button)
         mainScreen.setHomeScreenRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
                 switchScreens("mainscreen", "homescreen");
             }
         });
+        
+        //user clicks the save button -- write to file
         mainScreen.setSaveRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
@@ -171,37 +193,55 @@ public class Main extends Application {
                 writeToFile(file);
             }
         });
+        
+        //user is viewing year n, clicks the right arrow button to advance to
+        //year n+1 
         mainScreen.setNextYearRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
-                updateMainScreen( ((Year) data).getStartYear() + 1);
+                updateMainScreen(((Year) data).getStartYear() + 1);
             }
         });
+        
+        //user is on mainScreen viewing year n, clicks the left arrow button
+        //to back up to year n-1
         mainScreen.setPrevYearRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
                 updateMainScreen( ((Year) data).getStartYear() - 1);
             }
         });
+        
+        //user is on dataScreen, clicks button to return to mainScreen
         dataScreen.setMainScreenRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
                 switchScreens("datascreen", "mainscreen");
             }
         });
+        
+        //user clicks the submit button on the datascreen and no owner is set
+        //for the datascren
         dataScreen.setNewActivityHandler(new Handler() {
             @Override
             public void action(Object data) {
                 CLActivity c = (CLActivity) data;
                 years.addData(c);
+                undo.push(UserAction.addition(c));
+                redo.clear();
             }
         });
+        
+        //user clicks the submit button on the datascreen while the owner is set
         dataScreen.setUpdateActivityHandler(new Handler() {
             @Override
             public void action(Object data) {
                 mainScreen.update();
             }
         });
+        
+        //user is viewing details for a CLActivity and clicks the button to
+        //return to the mainscreen
         detailScreen.setMainScreenRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
@@ -218,6 +258,13 @@ public class Main extends Application {
         primaryStage.show();
     }
     
+    /*
+     * convenience method to simplify code in action handlers.  When mainScreen
+     * requests that the current year in the display be incremented or
+     * decremented, it passes the Year that it is currently displaying.  From
+     * that we extract the numerical value of the year, add or subtract 1, and
+     * call this method to find the Year object for the requested year
+     */
     private void updateMainScreen(int newYear) {
         if(years.indexOf(newYear) != -1) {
             mainScreen.update(years.get(years.indexOf(newYear)));
@@ -226,6 +273,10 @@ public class Main extends Application {
         }
     }
     
+    /*
+     * removes the current screen from the Scene, adds the requested screen, and
+     * updates the window graphics
+     */
     private void switchScreens(String from, String to) {
         switch(from) {
             case "mainscreen": root.getChildren().remove(mainScreen); break;
@@ -246,6 +297,11 @@ public class Main extends Application {
         windowButtonFG.setValue((Paint) settings.get(currState+"WindowButtonFGPaint"));
     }
     
+    /* 
+     * initializes the GUI settings.  These are not changed anywhere else, so if
+     * you want to edit the background colors/borders/font colors/etc., this is
+     * the place to do it
+     */
     private void defaultSettings() {
         settings.put("homescreenBGPaint", Color.BLACK);
         settings.put("homescreenBGStroke", new Color(1,.5,0,.8));
@@ -256,12 +312,12 @@ public class Main extends Application {
         settings.put("mainscreenBGStroke", Color.BLACK);
         settings.put("datascreenBGPaint", new Color(.1, .1, .1, .8));
         settings.put("datascreenBGStroke", Color.TRANSPARENT);
-        settings.put("detailscreenBGPaint", Color.ORANGE);
-        settings.put("detailscreenBGStroke", Color.BLACK);
+        settings.put("detailscreenBGPaint", Color.BLACK);
+        settings.put("detailscreenBGStroke", Color.DARKORANGE);
         settings.put("mainscreenWindowButtonFGPaint", new Color(1,.5,0,1));
         settings.put("homescreenWindowButtonFGPaint", new Color(1,.5,0,1));
         settings.put("datascreenWindowButtonFGPaint", new Color(1,.5,0,1));
-        settings.put("detailscreenWindowButtonFGPaint", Color.BLACK);
+        settings.put("detailscreenWindowButtonFGPaint", Color.WHITE);
         settings.put("mainscreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("homescreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("datascreenWindowButtonBGPaint", Color.TRANSPARENT);
@@ -273,7 +329,7 @@ public class Main extends Application {
         settings.put("tableHeaderTextPaint", Color.WHITE);
         settings.put("tableHeaderTextFont", new Font("Comic Sans MS", 16));
         settings.put("mainscreenButtonFGPaint", Color.WHITE);
-        settings.put("mainscreenButtonBGPaint", Color.TRANSPARENT);
+        settings.put("mainscreenButtonBGPaint", new Color(.4,.4,.4,1));
         settings.put("mainscreenButtonOutlinePaint", Color.WHITE);
         settings.put("datascreenButtonFGPaint", Color.WHITE);
         settings.put("datascreenButtonBGPaint", Color.TRANSPARENT);
@@ -289,22 +345,24 @@ public class Main extends Application {
         settings.put("scrollbarWidth", 10.0);
         settings.put("scrollbarFGPaint", new Color(1, .5, 0, 1));
         settings.put("scrollbarFGStroke", Color.BLACK);
-        settings.put("scrollbarBGPaint", new Color(1, 1, 1, 1));
+        settings.put("scrollbarBGPaint", new Color(1, 1, 1, 0.15));
         windowBGPaint.setValue((Paint) settings.get("homescreenBGPaint"));
         windowBGStroke.setValue((Paint) settings.get("homescreenBGStroke"));
         windowButtonBG.setValue((Paint) settings.get("homescreenWindowButtonBGPaint"));
         windowButtonFG.setValue((Paint) settings.get("homescreenWindowButtonFGPaint"));
     }
     
+    /*
+     * initializes the homeScreen (file open/create screen)
+     */
     private void getHomeScreen(final Stage primaryStage) {
         homeScreen = new VBox();
         homeScreen.setSpacing(20);
         homeScreen.setAlignment(Pos.CENTER);
-        Text t = new Text("Welcome to the Honors\n"
-                + "Comp Learning tracker!\n"
-                + "If you have an existing file, enter its name or click Choose,\n"+
-                "then click Open.  If you have not used Comp Learning Tracker\n"+
-                "before, click New.");
+        Text t = new Text("Welcome to the Honors Comp Learning tracker!\n"
+                + "If you have an existing file, enter its name or click Choose,"
+                + " then click Open.\n If you have not used Comp Learning"
+                + " Tracker before, click New.");
         t.setTextAlignment(TextAlignment.CENTER);
         t.setFont((Font) settings.get("homescreenTextFont"));
         t.setFill((Paint) settings.get("homescreenTextPaint"));
@@ -400,10 +458,8 @@ public class Main extends Application {
         homeScreen.setLayoutY(25);
     }
     
-    /**
+    /*
      * Initializes the window background, window border, and window buttons.
-     * @param primaryStage the stage this window will be displayed in
-     * @return a decorated window
      */
     private Group getWindow(final Stage primaryStage) {
         Group wdw = new Group(); //the node that will be returned
@@ -457,8 +513,7 @@ public class Main extends Application {
 
             @Override
             public void handle(MouseEvent arg0) {
-                primaryStage.getOwner().hide();
-//                primaryStage.toBack();
+                primaryStage.setIconified(true);
             }
         });
         wdw.getChildren().add(minimizeButton);
@@ -498,6 +553,11 @@ public class Main extends Application {
         return wdw;
     }
     
+    /*
+     * Opens a new file and initializes the mainScreen to show the newly opened
+     * data.  If there are problems with the file's contents, the ParseException
+     * thrown by loadFromFile is allowed to pass
+     */
     private void openExistingFile(String fileName) throws ParseException {
         file = new File(fileName);
         loadFromFile(file);
@@ -509,6 +569,9 @@ public class Main extends Application {
         switchScreens("homescreen", "mainscreen");
     }
 
+    /*
+     * Writes the data to the given file
+     */
     private void writeToFile (File f) {
         try(java.io.PrintWriter p = new java.io.PrintWriter(f)) {
             for(Year y : years) {
@@ -535,6 +598,11 @@ public class Main extends Application {
         }
     }
     
+    /*
+     * Parses the given file.  Is fairly robust--usually can tell you where it
+     * encountered an error, if it does. This is stored in the ParseException
+     * that is thrown.
+     */
     private void loadFromFile(File file) throws ParseException {
         int lineNum = 0;
         try {

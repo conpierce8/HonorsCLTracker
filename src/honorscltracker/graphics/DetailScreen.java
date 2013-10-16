@@ -1,14 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package honorscltracker.graphics;
 
 import honorscltracker.CLActivity;
-import honorscltracker.CLActivity;
 import honorscltracker.Handler;
-import honorscltracker.Handler;
-import honorscltracker.Main;
 import honorscltracker.Main;
 import java.util.HashMap;
 import javafx.event.EventHandler;
@@ -20,13 +13,22 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebView;
 
 /**
- *
- * @author Connor
+ * GUI screen that displays details about a comp learning activity. This is
+ * comprised primarily of a <code>WebView</code> node, which displays all
+ * available information about a given comp learning activity: short
+ * description, contact details, date, hours, and extended description. Also
+ * contains a button to navigate back to the homescreen.
+ * @author Connor Pierce
  */
 public class DetailScreen extends Group {
     private WebView view;
     private Handler mainscreenRequest;
     
+    /**
+     * Creates a DetailScreen with an empty <code>WebView</code> node, and with
+     * its appearance governed by the given GUI settings.
+     * @param settings GUI settings
+     */
     public DetailScreen(HashMap<String, Object> settings) {
         view = new WebView();
         view.setMaxSize((Double) settings.get("stageWidth")-20, (Double) settings.get("stageHeight")-35);
@@ -56,13 +58,25 @@ public class DetailScreen extends Group {
         getChildren().add(backButton);
     }
     
+    /**
+     * Set the handler to be called when the user clicks the 'return to main
+     * screen' button.
+     * @param h the handler to be called when the user clicks the 'return to
+     * main screen' button
+     */
     public void setMainScreenRequestHandler(Handler h ) {
         mainscreenRequest = h;
     }
     
+    /**
+     * Updates the WebView to contain a formatted representation of the 
+     * information in the given comp learning activity.
+     * @param c the comp learning activity to display details for
+     */
     public void setCLActivity(CLActivity c) {
         String document = "<html><head><style>"
                 + "h1.organization{font:18pt bold;font-family:sans-serif;}";
+        document += "body{background:#DDD;}";
         document += "span.contact-name{font:14pt italic;font-family:sans-serif;}";
         document += "span.label{font:10pt;font-family:sans-serif;";
         document += "span.contact-phone{font:11pt font-family:sans-serif;}";

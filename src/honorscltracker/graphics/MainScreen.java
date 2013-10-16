@@ -1,19 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package honorscltracker.graphics;
 
 import honorscltracker.CLActivity;
 import honorscltracker.Handler;
 import honorscltracker.Main;
 import honorscltracker.Year;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import javafx.event.EventHandler;
 import javafx.geometry.VPos;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Paint;
@@ -23,19 +17,44 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 /**
- *
- * @author Connor
+ * Defines the main screen.  This is the screen that the user sees immediately
+ * after opening or creating a file.  It contains a table displaying a single
+ * year's worth of comp learning activity, and includes buttons to move between
+ * screens, and to move between years.
+ * @author Connor Pierce
  */
 public class MainScreen extends Group {
-    private Text title;
-    private Year data;
-    private HashMap<String, Object> settings;
-    private Group prevButton, nextButton, homeButton, inputButton, saveButton;
-    private Group table;
-    private Handler homescreenRequest, datascreenRequest, detailRequest,
-            prevYearRequest, nextYearRequest, saveRequest, editRequest;
-    private double tableY;
+    private Text title; //displays the year currently in view
+    private Year data; //data for the year currently in view
+    private HashMap<String, Object> settings; //GUI settings
+    private Group prevButton; //button to move to previous year
+    private Group nextButton; //button to move to next year
+    private Group homeButton; //button to show the homescreen
+    private Group inputButton; //button to show the datascreen
+    private Group saveButton; //button to save changes to file
+    private Group table; //table displaying comp learning activity
+    private Handler homescreenRequest; //handler called when homeButton is
+                                       //clicked
+    private Handler datascreenRequest;
+    private Handler detailRequest; //handler called when user left-clicks on
+                                   //table, wants to see details about a comp
+                                   //learning activity
+    private Handler prevYearRequest; //handler called when user clicks
+                                     //prevButton
+    private Handler nextYearRequest; //handler called when user clicks
+                                     //nextButton
+    private Handler saveRequest; //handler called when user clicks save button
+    private Handler editRequest; //handler called when user right-clicks on
+                                 //table, wants to edit a comp learning activity
+    private double tableY; //y coordinate of the top of the table
     
+    /**
+     * Creates a new <code>MainScreen</code> and initializes GUI components.
+     * Table and buttons are styled according to <code>settings</code>, and the
+     * contains data stored in <code>data</code>.
+     * @param settings GUI settings to style this screen with
+     * @param data comp learning activities for one academic year
+     */
     public MainScreen(HashMap<String, Object> settings, Year data) {
         this.settings = settings;
         this.data = data;
@@ -47,39 +66,95 @@ public class MainScreen extends Group {
         init();
     }
     
+    /**
+     * Changes the year for which this screen is displaying data.  Title and
+     * table are updated to display the given <code>Year</code>.
+     * @param data the new <code>Year</code> for which to display data
+     */
     public void update(Year data) {
         this.data = data;
         update();
     }
     
+    /**
+     * Sets the handler to be called when the user requests to view the
+     * homescreen (clicks the homeScreen button).
+     * @param h the handler to be called when the users requests to view the
+     * homescreen
+     */
     public void setHomeScreenRequestHandler(Handler h) {
         homescreenRequest = h;
     }
     
+    /**
+     * Sets the handler to be called when the user requests to view the
+     * datascreen (clicks the dataScreen button).
+     * @param h the handler to be called when the users requests to view the
+     * datascreen
+     */
     public void setDataScreenRequestHandler(Handler h) {
         datascreenRequest = h;
     }
     
+    /**
+     * Sets the handler to be called when the user requests to edit a comp
+     * learning activity (right clicks on a comp learning activity in the
+     * table). When this handler is called, the activity to be edited is passed
+     * to the <code>action</code> method.
+     * @param h the handler to be called when the users requests to edit a comp
+     * learning activity
+     */
     public void setEditCLActivityRequestHandler(Handler h) {
         editRequest = h;
     }
     
+    /**
+     * Sets the handler to be called when the user requests to view details
+     * about a comp learning activity (right clicks on a comp learning activity 
+     * in the table). When this handler is called, the activity to be edited is 
+     * passed to the <code>action</code> method.
+     * @param h the handler to be called when the users requests to view details
+     * about a comp learning activity
+     */
     public void setDetailRequestHandler(Handler h) {
         detailRequest = h;
     }
     
+    /**
+     * Sets the handler to be called when the user requests to view the previous
+     * year (clicks on the left arrow button).  The <code>Year</code> currently
+     * in view is passed to the <code>action</code> method.
+     * @param h the handler to be called when the user requests to view the
+     * previous year
+     */
     public void setPrevYearRequestHandler(Handler h) {
         prevYearRequest = h;
     }
     
+    /**
+     * Sets the handler to be called when the user requests to view the next
+     * year (clicks on the right arrow button). The <code>Year</code> currently
+     * in view is passed to the <code>action</code> method.
+     * @param h the handler to be called when the user requests to view the next
+     * year
+     */
     public void setNextYearRequestHandler(Handler h) {
         nextYearRequest = h;
     }
     
+    /**
+     * Sets the handler to be called when the user clicks the save button.
+     * <code>null</code> is passed to the <code>action</code> method.
+     * @param h the handler to be called when the user clicks the save button
+     */
     public void setSaveRequestHandler(Handler h) {
         saveRequest = h;
     }
     
+    /*
+     * Finds the dimenions of the title Text object, and lays it out to be
+     * centered horizontally and aligned 10 pixels above the table.
+     */
     private void layoutTitle() {
         double x = ((Double) settings.get("stageWidth")-title.getBoundsInParent().getWidth())/2;
         title.setLayoutX(x);
@@ -89,6 +164,10 @@ public class MainScreen extends Group {
         System.out.println("title layout: "+x+","+y);
     }
     
+    /*
+     * Initializes and lays out the components of the main screen: title, table,
+     * and buttons.
+     */
     private void init() {
         layoutTitle();
         this.getChildren().add(title);
@@ -307,6 +386,12 @@ public class MainScreen extends Group {
         //TODO: table scroll bar
     }
     
+    /*
+     * Lays out one column of text in the table, given the text to be displayed
+     * there as an Object[], the height of each row, and the maximum allowed
+     * width for the column.  Text will be truncated and an ellipsis ... added
+     * to it.
+     */
     private Group getColumn(Object[] data, double rowHeight, double maxWidth) {
         //TODO: no header -- put that in getTable so that it is unaffected by scrollbar
         Group col = new Group();
@@ -332,6 +417,11 @@ public class MainScreen extends Group {
         return col;
     }
     
+    /*
+     * Creates the background rectangle for the row-th row of the table.  This
+     * row is formatted according to the settings contained in the GUI
+     * settings.
+     */
     private Rectangle getTableRowRect(int row, double dataRowHeight, final CLActivity c) {
         Rectangle r = new Rectangle();
         r.setWidth((Double) settings.get("stageWidth") - 20 - (Double) settings.get("scrollbarWidth"));
@@ -358,8 +448,13 @@ public class MainScreen extends Group {
         return r;
     }
 
+    /**
+     * Updates the main screen - title and table are re-initialized.  Should be
+     * called after <code>CLActivity</code>s have been added or modified and the
+     * table needs to be updated to reflect those changes.
+     */
     public void update() {
-        System.out.println("setting data to "+data.getYearString());
+//        System.out.println("setting data to "+data.getYearString());
         title.setText(this.data.getYearString());
         layoutTitle();
         table.getChildren().clear();
