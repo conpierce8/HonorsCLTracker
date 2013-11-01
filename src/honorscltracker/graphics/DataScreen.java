@@ -22,6 +22,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -147,6 +148,13 @@ public class DataScreen extends Screen {
         v.getChildren().add(hb5);
         
         detailsField = new HTMLEditor();
+        detailsField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+
+            @Override
+            public void handle(KeyEvent t) {
+                t.consume();
+            }
+        });
         detailsField.setPrefHeight(200);
         v.getChildren().add(detailsField);
         

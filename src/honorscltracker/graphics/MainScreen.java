@@ -269,7 +269,7 @@ public class MainScreen extends Screen {
         homeButtonBg.setFill((Paint) settings.get("mainscreenButtonBGPaint"));
         homeButton.getChildren().add(homeButtonBg);
         Polygon homeButtonFg = new Polygon();
-        homeButtonFg.getPoints().addAll(0.0,2.0,3.0,0.0,3.0,4.0);
+        homeButtonFg.getPoints().addAll(0.0,0.0,0.0,4.0,3.0,2.0);
         homeButtonFg.setFill((Paint) settings.get("mainscreenButtonFGPaint"));
         homeButtonFg.setLayoutX(1.5); homeButtonFg.setLayoutY(13);
         homeButton.getChildren().add(homeButtonFg);

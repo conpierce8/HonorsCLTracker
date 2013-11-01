@@ -14,14 +14,19 @@ import java.util.HashMap;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.animation.PathTransition;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.*;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 
 /**
  * The main class for the Main application. The application exists in
@@ -108,21 +113,30 @@ public class Main extends Application {
     public void start(final Stage primaryStage) {
         defaultSettings();
 
-        primaryStage.setTitle("FX RunningBuddy");
+        primaryStage.setTitle("Comp Learning Tracker");
         primaryStage.initStyle(StageStyle.TRANSPARENT);
 
         root = new Group(); //Contains everything to be displayed
         
         //<editor-fold defaultstate="collapsed" desc="Initialize all the screens">
+        double width = (Double) settings.get("stageWidth");
+        double height = (Double) settings.get("stageHeight");
         fileChooser = new FileChooser();
         mainScreen = new MainScreen(primaryStage, settings, new Year(currentYear));
+        mainScreen.setLayoutX(width);
+        mainScreen.setLayoutY(height);
         detailScreen = new DetailScreen(primaryStage, settings);
-//        detailScreen.setLayoutY(15);
+        detailScreen.setLayoutX(2*width);
+        detailScreen.setLayoutY(height);
         dataScreen = new DataScreen(primaryStage, settings, years.getYearsList());
+        dataScreen.setLayoutX(width);
+        dataScreen.setLayoutY(0);
         homeScreen = new HomeScreen(primaryStage, settings);
+        homeScreen.setLayoutX(0);
+        homeScreen.setLayoutY(height);
         //</editor-fold>
         
-        //<editor-fold defaultstate="collapsed" desc="Implement action handlers">
+        //<editor-fold defaultstate="collapsed" desc="Action handlers">
         //User is on the homescreen, clicks the New File button
         homeScreen.setOnNewFileRequestHandler(new Handler() {
             @Override
@@ -258,9 +272,13 @@ public class Main extends Application {
         });
         //</editor-fold>
         
-        root.getChildren().add(homeScreen);
+        root.getChildren().addAll(homeScreen, mainScreen, dataScreen, detailScreen);
+        root.setTranslateX(0);
+        root.setTranslateY(-height);
+//        root.setScaleX(1/3);
 
-        Scene scene = new Scene(root, (Double) settings.get("stageWidth"), (Double) settings.get("stageHeight"));
+        Scene scene = new Scene(root, (Double) settings.get("stageWidth"), 
+                (Double) settings.get("stageHeight"));
         scene.setFill(new Color(0,0,0,0));
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -286,18 +304,51 @@ public class Main extends Application {
      * updates the window graphics
      */
     private void switchScreens(String from, String to) {
+        double width = (Double) settings.get("stageWidth");
+        double height = (Double) settings.get("stageHeight");
+        Path path = new Path();
+        MoveTo startPt = new MoveTo();
+        LineTo endPt = new LineTo();
         switch(from) {
-            case "mainscreen": root.getChildren().remove(mainScreen); break;
-            case "datascreen": root.getChildren().remove(dataScreen); break;
-            case "detailscreen": root.getChildren().remove(detailScreen); break;
-            case "homescreen": root.getChildren().remove(homeScreen); break;
+            case "mainscreen": 
+                startPt.setX(0.5*width);
+                startPt.setY(0);
+                break;
+            case "datascreen": 
+                startPt.setX(0.5*width);
+                startPt.setY(height);
+                break;
+            case "detailscreen":
+                startPt.setX(-0.5*width);
+                startPt.setY(0);
+                break;
+            case "homescreen": 
+                startPt.setX(1.5*width);
+                startPt.setY(0);
+                break;
         }
         switch(to) {
-            case "mainscreen": root.getChildren().add(mainScreen); break;
-            case "datascreen": root.getChildren().add(dataScreen); break;
-            case "detailscreen": root.getChildren().add(detailScreen); break;
-            case "homescreen": root.getChildren().add(homeScreen); break;
+            case "mainscreen": 
+                endPt.setX(0.5*width);
+                endPt.setY(0);
+                break;
+            case "datascreen": 
+                endPt.setX(0.5*width);
+                endPt.setY(height);
+                break;
+            case "detailscreen":
+                endPt.setX(-0.5*width);
+                endPt.setY(0);
+                break;
+            case "homescreen": 
+                endPt.setX(1.5*width);
+                endPt.setY(0);
+                break;
         }
+        path.getElements().add(startPt);
+        path.getElements().add(endPt);
+        PathTransition trans = new PathTransition(Duration.seconds(0.5),path,root);
+        trans.play();
     }
     
     /* 

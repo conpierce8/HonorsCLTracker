@@ -44,12 +44,12 @@ public class DetailScreen extends Screen {
         backButtonBg.setFill((Paint) settings.get("detailscreenButtonBGPaint"));
         backButton.getChildren().add(backButtonBg);
         Polygon homeButtonFg = new Polygon();
-        homeButtonFg.getPoints().addAll(0.0,2.0,3.0,0.0,3.0,4.0);
+        homeButtonFg.getPoints().addAll(0.0,0.0,0.0,4.0,3.0,2.0);
         homeButtonFg.setFill((Paint) settings.get("detailscreenButtonFGPaint"));
         homeButtonFg.setLayoutX(1.5); homeButtonFg.setLayoutY(13);
         backButton.getChildren().add(homeButtonFg);
         backButton.setLayoutX(2.5);
-        backButton.setLayoutY(((Double) settings.get("stageHeight") - 35)/2-15);
+        backButton.setLayoutY(((Double) settings.get("stageHeight") - 35)/2+10);
         backButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
