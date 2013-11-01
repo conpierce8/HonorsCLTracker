@@ -15,6 +15,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 /**
  * Defines the main screen.  This is the screen that the user sees immediately
@@ -23,7 +24,8 @@ import javafx.scene.text.Text;
  * screens, and to move between years.
  * @author Connor Pierce
  */
-public class MainScreen extends Group {
+public class MainScreen extends Screen {
+    //TODO: fix bug where detail screen doesn't display on second viewing
     private Text title; //displays the year currently in view
     private Year data; //data for the year currently in view
     private HashMap<String, Object> settings; //GUI settings
@@ -52,10 +54,12 @@ public class MainScreen extends Group {
      * Creates a new <code>MainScreen</code> and initializes GUI components.
      * Table and buttons are styled according to <code>settings</code>, and the
      * contains data stored in <code>data</code>.
+     * @param primaryStage JavaFX stage for this application
      * @param settings GUI settings to style this screen with
      * @param data comp learning activities for one academic year
      */
-    public MainScreen(HashMap<String, Object> settings, Year data) {
+    public MainScreen(Stage primaryStage, HashMap<String, Object> settings, Year data) {
+        super(primaryStage, settings, "main");
         this.settings = settings;
         this.data = data;
         table = new Group();
@@ -169,8 +173,9 @@ public class MainScreen extends Group {
      * and buttons.
      */
     private void init() {
+        Group content = new Group();
         layoutTitle();
-        this.getChildren().add(title);
+        content.getChildren().add(title);
         
         getTable();
         
@@ -193,7 +198,7 @@ public class MainScreen extends Group {
             }
         });
         prevButton.setLayoutX(10); prevButton.setLayoutY(0);
-        this.getChildren().add(prevButton);
+        content.getChildren().add(prevButton);
         
         nextButton = new Group();
         Rectangle nextButtonBG = new Rectangle(50,tableY-10);
@@ -215,7 +220,7 @@ public class MainScreen extends Group {
         });
         nextButton.setLayoutX((Double) settings.get("stageWidth")-60);
         nextButton.setLayoutY(0); 
-        this.getChildren().add(nextButton);
+        content.getChildren().add(nextButton);
         
         inputButton = new Group();
         Rectangle inputButtonBg = new Rectangle(30, 7);
@@ -236,7 +241,7 @@ public class MainScreen extends Group {
                 datascreenRequest.action(null);
             }
         });
-        this.getChildren().add(inputButton);
+        content.getChildren().add(inputButton);
         
         saveButton = new Group();
         Rectangle saveButtonBg = new Rectangle(30, 7);
@@ -256,7 +261,7 @@ public class MainScreen extends Group {
                 saveRequest.action(null);
             }
         });
-        this.getChildren().add(saveButton);
+        content.getChildren().add(saveButton);
         
         homeButton = new Group();
         Rectangle homeButtonBg = new Rectangle(6, 30);
@@ -277,11 +282,14 @@ public class MainScreen extends Group {
                 homescreenRequest.action(null);
             }
         });
-        this.getChildren().add(homeButton);
+        content.getChildren().add(homeButton);
         
         table.setLayoutY(tableY);
         table.setLayoutX(10);
-        this.getChildren().add(table);
+        content.getChildren().add(table);
+        content.setLayoutY(25);
+        
+        this.getChildren().add(content);
     }
     
     private void getTable() {

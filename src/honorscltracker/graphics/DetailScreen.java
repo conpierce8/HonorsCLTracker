@@ -11,6 +11,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 
 /**
  * GUI screen that displays details about a comp learning activity. This is
@@ -20,7 +21,7 @@ import javafx.scene.web.WebView;
  * contains a button to navigate back to the homescreen.
  * @author Connor Pierce
  */
-public class DetailScreen extends Group {
+public class DetailScreen extends Screen {
     private WebView view;
     private Handler mainscreenRequest;
     
@@ -29,7 +30,8 @@ public class DetailScreen extends Group {
      * its appearance governed by the given GUI settings.
      * @param settings GUI settings
      */
-    public DetailScreen(HashMap<String, Object> settings) {
+    public DetailScreen(Stage primaryStage, HashMap<String, Object> settings) {
+        super(primaryStage, settings, "detail");
         view = new WebView();
         view.setMaxSize((Double) settings.get("stageWidth")-20, (Double) settings.get("stageHeight")-35);
         view.setLayoutX(10);

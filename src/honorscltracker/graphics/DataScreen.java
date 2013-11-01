@@ -8,7 +8,6 @@ import honorscltracker.CLActivity;
 import honorscltracker.Contact;
 import honorscltracker.Handler;
 import honorscltracker.Main;
-import honorscltracker.YearList;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -32,12 +31,13 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.web.HTMLEditor;
+import javafx.stage.Stage;
 
 /**
  *
  * @author Connor
  */
-public class DataScreen extends Group {
+public class DataScreen extends Screen {
     private CLActivity owner;
     private HashMap<String, Object> settings;
     private String labelStyle = "-fx-text-fill:white;-fx-font-weight:bold;";
@@ -59,7 +59,8 @@ public class DataScreen extends Group {
      * activities.  Used for initializing 'year' combo box. Should be obtained
      * from <code>honorscltracker.YearList.getYearList()</code>
      */
-    public DataScreen(HashMap<String, Object> prefs, TreeSet<String> years) {
+    public DataScreen(Stage primaryStage, HashMap<String, Object> prefs, TreeSet<String> years) {
+        super(primaryStage, prefs, "data");
         // By default, we're not editing anything an activity; we're creating
         // a new one (i.e. 'owner' is null)
         owner = null;
@@ -71,6 +72,8 @@ public class DataScreen extends Group {
      * Initializes and lays out the data input elements.
      */
     private void init(TreeSet<String> years) {
+        Group content = new Group();
+        
         VBox v = new VBox();
         v.setMaxWidth((Double) settings.get("stageWidth")-35);
         v.setSpacing(10);
@@ -186,8 +189,12 @@ public class DataScreen extends Group {
         backButton.setLayoutX((Double) settings.get("stageWidth") - 145);
         backButton.setLayoutY((Double) settings.get("stageHeight") - 34.5);
         
-        getChildren().add(scrollpane);
-        getChildren().add(backButton);
+        content.getChildren().add(scrollpane);
+        content.getChildren().add(backButton);
+        content.setLayoutX(10);
+        content.setLayoutY(25);
+        
+        this.getChildren().add(content);
     }
     
     /*

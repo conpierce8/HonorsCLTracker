@@ -2,6 +2,7 @@ package honorscltracker;
 
 import honorscltracker.graphics.DataScreen;
 import honorscltracker.graphics.DetailScreen;
+import honorscltracker.graphics.HomeScreen;
 import honorscltracker.graphics.MainScreen;
 import java.io.File;
 import java.io.IOException;
@@ -10,32 +11,14 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.*;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -77,27 +60,19 @@ public class Main extends Application {
     private int currentYear;
     private YearList years = new YearList();
     
+    private HomeScreen homeScreen;
     private MainScreen mainScreen;
     private DataScreen dataScreen;
     private DetailScreen detailScreen;
     private FileChooser fileChooser;
+    private Group alertBox; //TODO: add alerts
     private Group root;
-    private Node table;
-    private Text title;
-    private VBox homeScreen;
-    private String currState = "homescreen";
-    private double tableY;
-    
-    private SimpleObjectProperty<Paint> windowBGPaint = new SimpleObjectProperty<>();
-    private SimpleObjectProperty<Paint> windowBGStroke = new SimpleObjectProperty<>();
-    private SimpleObjectProperty<Paint> windowButtonBG = new SimpleObjectProperty<>();
-    private SimpleObjectProperty<Paint> windowButtonFG = new SimpleObjectProperty<>();
 
     private File file;
     
-    private double dragOffsetX = 0, dragOffsetY = 0, scrollStartY, translateStartY;
-    
     private Stack<UserAction> undo, redo;
+    
+    private boolean unsavedChanges = false;
     //</editor-fold>
     
     /**
@@ -113,6 +88,14 @@ public class Main extends Application {
      * in the HonorsCLTracker program.
      */
     public Main() {
+        now();
+    }
+    
+    /*
+     * Method to update currentYear to the current year. Useful when opening new
+     * files.
+     */
+    private void now() {
         GregorianCalendar c = new GregorianCalendar();
         if(c.get(Calendar.MONTH) < 5) {
             currentYear = c.get(Calendar.YEAR)-1;
@@ -129,21 +112,42 @@ public class Main extends Application {
         primaryStage.initStyle(StageStyle.TRANSPARENT);
 
         root = new Group(); //Contains everything to be displayed
-        root.getChildren().add(getWindow(primaryStage)); //window graphics
         
         //<editor-fold defaultstate="collapsed" desc="Initialize all the screens">
         fileChooser = new FileChooser();
-        getHomeScreen(primaryStage);
-        mainScreen = new MainScreen(settings, new Year(currentYear));
-        mainScreen.setLayoutY(25);
-        detailScreen = new DetailScreen(settings);
+        mainScreen = new MainScreen(primaryStage, settings, new Year(currentYear));
+        detailScreen = new DetailScreen(primaryStage, settings);
 //        detailScreen.setLayoutY(15);
-        dataScreen = new DataScreen(settings, years.getYearsList());
-        dataScreen.setLayoutY(25);
-        dataScreen.setLayoutX(10);
+        dataScreen = new DataScreen(primaryStage, settings, years.getYearsList());
+        homeScreen = new HomeScreen(primaryStage, settings);
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="Implement action handlers">
+        //User is on the homescreen, clicks the New File button
+        homeScreen.setOnNewFileRequestHandler(new Handler() {
+            @Override
+            public void action(Object data) {
+                years = new YearList();
+                now();
+                updateMainScreen(currentYear);
+                switchScreens("home", "main");
+            }
+        });
+        
+        //User is on the homescreen, clicks the Open File button or drags and
+        //drops a file into the filename field
+        homeScreen.setOnOpenFileRequestHandler(new Handler() {
+            @Override
+            public void action(Object data) {
+                years = new YearList();
+                try {
+                    openExistingFile((String) data);
+                } catch (ParseException ex) {
+                    homeScreen.fileError(ex.getMessage());
+                }
+            }
+        });
+        
         //user is on mainScreen, wants the dataScreen to be shown (i.e. clicks
         //on the button to show the dataScreen
         mainScreen.setDataScreenRequestHandler(new Handler() {
@@ -179,7 +183,11 @@ public class Main extends Application {
         mainScreen.setHomeScreenRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
-                switchScreens("mainscreen", "homescreen");
+                if(unsavedChanges) {
+                    //TODO: ask for confirmation to move to new screen
+                } else {
+                    switchScreens("mainscreen", "homescreen");
+                }
             }
         });
         
@@ -290,11 +298,6 @@ public class Main extends Application {
             case "detailscreen": root.getChildren().add(detailScreen); break;
             case "homescreen": root.getChildren().add(homeScreen); break;
         }
-        currState = to;
-        windowBGPaint.setValue((Paint) settings.get(currState+"BGPaint"));
-        windowBGStroke.setValue((Paint) settings.get(currState+"BGStroke"));
-        windowButtonBG.setValue((Paint) settings.get(currState+"WindowButtonBGPaint"));
-        windowButtonFG.setValue((Paint) settings.get(currState+"WindowButtonFGPaint"));
     }
     
     /* 
@@ -346,211 +349,6 @@ public class Main extends Application {
         settings.put("scrollbarFGPaint", new Color(1, .5, 0, 1));
         settings.put("scrollbarFGStroke", Color.BLACK);
         settings.put("scrollbarBGPaint", new Color(1, 1, 1, 0.15));
-        windowBGPaint.setValue((Paint) settings.get("homescreenBGPaint"));
-        windowBGStroke.setValue((Paint) settings.get("homescreenBGStroke"));
-        windowButtonBG.setValue((Paint) settings.get("homescreenWindowButtonBGPaint"));
-        windowButtonFG.setValue((Paint) settings.get("homescreenWindowButtonFGPaint"));
-    }
-    
-    /*
-     * initializes the homeScreen (file open/create screen)
-     */
-    private void getHomeScreen(final Stage primaryStage) {
-        homeScreen = new VBox();
-        homeScreen.setSpacing(20);
-        homeScreen.setAlignment(Pos.CENTER);
-        Text t = new Text("Welcome to the Honors Comp Learning tracker!\n"
-                + "If you have an existing file, enter its name or click Choose,"
-                + " then click Open.\n If you have not used Comp Learning"
-                + " Tracker before, click New.");
-        t.setTextAlignment(TextAlignment.CENTER);
-        t.setFont((Font) settings.get("homescreenTextFont"));
-        t.setFill((Paint) settings.get("homescreenTextPaint"));
-        homeScreen.getChildren().add(t);
-        
-        HBox fileBox = new HBox();
-        fileBox.setAlignment(Pos.CENTER);
-        fileBox.setSpacing(20);
-        final TextField f = new TextField("Enter file name here");
-        f.setAlignment(Pos.BASELINE_CENTER);
-        f.setPrefColumnCount(50);
-        f.setOnDragOver(new EventHandler<DragEvent>() {
-
-            @Override
-            public void handle(DragEvent event) {
-                event.acceptTransferModes(TransferMode.LINK);
-            }
-        });
-        f.setOnDragDropped(new EventHandler<DragEvent>() {
-
-            @Override
-            public void handle(DragEvent event) {
-                if(event.getDragboard().hasFiles()) {
-                    List<File> files = event.getDragboard().getFiles();
-                    if(files.size() > 1) {
-                        f.setText("Please select only one file!");
-                        f.setAlignment(Pos.CENTER);
-                        event.consume();
-                        return;
-                    }
-                    try {
-                        openExistingFile(files.get(0).getAbsolutePath());
-                    } catch(ParseException ex) {
-                        f.setText("Could not open file; "+ex.getMessage());
-                        f.setAlignment(Pos.CENTER);
-                    } finally {
-                        event.consume();
-                    }
-                }
-            }
-        });
-        fileBox.getChildren().add(f);
-        Button chooseButton = new Button("Choose...");
-        chooseButton.setOnAction(new EventHandler() {
-
-            @Override
-            public void handle(Event event) {
-                File temp = fileChooser.showOpenDialog(primaryStage);
-                if(temp != null) {
-                    f.setText(temp.getAbsolutePath());
-                }
-            }
-        });
-        fileBox.getChildren().add(chooseButton);
-        homeScreen.getChildren().add(fileBox);
-        
-        HBox buttonBox = new HBox();
-        buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setSpacing(20);
-        Button b = new Button("Create new file");
-        b.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent arg0) {
-                if(mainScreen == null) {
-                    mainScreen = new MainScreen(settings, new Year(currentYear));
-                }
-                mainScreen.setLayoutY(25);
-                switchScreens("homescreen", "mainscreen");
-            }
-        });
-        buttonBox.getChildren().add(b);
-        
-        Button b2 = new Button("Open existing file");
-        b2.setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override
-            public void handle(ActionEvent arg0) {
-                String file = f.getText();
-                try {
-                    openExistingFile(file);
-                } catch (ParseException ex) {
-                    f.setText("Could not read file: "+file+"; "+ex.getMessage());
-                    f.setAlignment(Pos.CENTER);
-                }
-            }
-        });
-        buttonBox.getChildren().add(b2);
-        homeScreen.getChildren().add(buttonBox);
-        
-        homeScreen.setPrefSize((Double) settings.get("stageWidth") - 20, (Double) settings.get("stageHeight") - 35);
-        homeScreen.setLayoutX(10);
-        homeScreen.setLayoutY(25);
-    }
-    
-    /*
-     * Initializes the window background, window border, and window buttons.
-     */
-    private Group getWindow(final Stage primaryStage) {
-        Group wdw = new Group(); //the node that will be returned
-        
-        //create the window background
-        Polygon windowBackground = new Polygon();
-        windowBackground.fillProperty().bind(windowBGPaint);
-        windowBackground.strokeProperty().bind(windowBGStroke);
-        double w = (Double) settings.get("stageWidth");
-        double h = (Double) settings.get("stageHeight");
-        windowBackground.getPoints().addAll(0d,15d,0d,h,w,h,w,15d,w-15,0d,w-65,0d,w-80,15d);
-        windowBackground.setStrokeWidth(1.5);
-        wdw.getChildren().add(windowBackground);
-        
-        //create close button
-        Group closeButton = new Group();
-        Rectangle box = new Rectangle(11,11);
-        box.fillProperty().bind(windowButtonBG);
-        closeButton.getChildren().add(box);
-        Line slash1 = new Line(1,1,10,10);
-        slash1.strokeProperty().bind(windowButtonFG);
-        closeButton.getChildren().add(slash1);
-        Line slash2 = new Line(1,10,10,1);
-        slash2.strokeProperty().bind(windowButtonFG);
-        closeButton.getChildren().add(slash2);
-        closeButton.setLayoutX(w-30);
-        closeButton.setLayoutY(5);
-        closeButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-//                if(file != null) {
-//                    writeToFile(file);
-//                }
-                primaryStage.close();
-            }
-        });
-        wdw.getChildren().add(closeButton);
-        
-        //create minimize button
-        Group minimizeButton = new Group();
-        Rectangle box2 = new Rectangle(11,11);
-        box2.fillProperty().bind(windowButtonBG);
-        minimizeButton.getChildren().add(box2);
-        Line line = new Line(0,10,10,10);
-        line.strokeProperty().bind(windowButtonFG);
-        minimizeButton.getChildren().add(line);
-        minimizeButton.setLayoutX(w-45);
-        minimizeButton.setLayoutY(5);
-        minimizeButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
-
-            @Override
-            public void handle(MouseEvent arg0) {
-                primaryStage.setIconified(true);
-            }
-        });
-        wdw.getChildren().add(minimizeButton);
-        
-        //create drag button
-        Group dragArea = new Group();
-        Rectangle box3 = new Rectangle(12,12);
-        box3.fillProperty().bind(windowButtonBG);
-        dragArea.getChildren().add(box3);
-        for(int i = 0; i < 6; i++) {
-            for(int j = 0; j < 6 - (i%2); j++) {
-                Rectangle dot = new Rectangle(1,1);
-                dot.setX(j*2+(i%2));
-                dot.setY(i*2);
-                dot.fillProperty().bind(windowButtonFG);
-                dragArea.getChildren().add(dot);
-            }
-        }
-        dragArea.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent arg0) {
-                dragOffsetX = arg0.getScreenX() - primaryStage.getX();
-                dragOffsetY = arg0.getScreenY() - primaryStage.getY();
-            }
-        });
-        dragArea.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent arg0) {
-                primaryStage.setX(arg0.getScreenX() - dragOffsetX);
-                primaryStage.setY(arg0.getScreenY() - dragOffsetY);
-            }
-        });
-        dragArea.setLayoutX(w - 61);
-        dragArea.setLayoutY(4);
-        wdw.getChildren().add(dragArea);
-        
-        return wdw;
     }
     
     /*
@@ -581,10 +379,10 @@ public class Main extends Application {
                         line += "desc="+d+"\n";
                         line += "date="+format.format(j.getDate().getTime())+"\n";
                         line += "year="+j.getStartYr()+"\n";
-                        Contact c = j.getContact();
-                        line += "contactname="+c.getName()+"\n";
-                        line += "contactemail="+c.getEmail()+"\n";
-                        line += "contactphone="+c.getPhone()+"\n";
+                        Contact contact = j.getContact();
+                        line += "contactname="+contact.getName()+"\n";
+                        line += "contactemail="+contact.getEmail()+"\n";
+                        line += "contactphone="+contact.getPhone()+"\n";
                         line += "hours="+j.getHours()+"\n";
                         line += "~~Details~~\n";
                         line += j.getDetails()+"\n~~/Details~~\n~/Activity~";
@@ -611,42 +409,42 @@ public class Main extends Application {
             CLActivity a = null;
             boolean parsingAct = false, parsingDetails = false;
             int complete = 0;
-            Contact c = null;
+            Contact contact = null;
             String details = null;
             while(s != null) {
                 lineNum ++;
-                if(s.equals("~Activity~") && !parsingAct) {
+                if(s.equals("~Activity~") && a == null) {
                     parsingAct = true;
                     a = new CLActivity();
-                    c = new Contact();
+                    contact = new Contact();
                     details = "";
-                } else if(s.startsWith("desc=") && parsingAct) {
+                } else if(s.startsWith("desc=") && a != null) {
                     a.setDesc(s.substring(s.indexOf('=')+1));
                     complete += 1;
-                } else if(s.startsWith("date=") && parsingAct) {
+                } else if(s.startsWith("date=") && a != null) {
                     String date = s.substring(s.indexOf('=')+1);
                     GregorianCalendar g = new GregorianCalendar();
                     g.setTime(format.parse(date));
                     a.setDate(g);
                     complete += 1<<1;
-                } else if(s.startsWith("contactname=") && parsingAct) {
-                    c.setName(s.substring(s.indexOf('=')+1));
+                } else if(s.startsWith("contactname=") && a != null) {
+                    contact.setName(s.substring(s.indexOf('=')+1));
                     complete += 1<<2;
-                } else if(s.startsWith("contactemail=") && parsingAct) {
-                    c.setEmail(s.substring(s.indexOf('=')+1));
+                } else if(s.startsWith("contactemail=") && a != null) {
+                    contact.setEmail(s.substring(s.indexOf('=')+1));
                     complete += 1<<3;
-                } else if(s.startsWith("contactphone=") && parsingAct) {
-                    c.setPhone(s.substring(s.indexOf('=')+1));
+                } else if(s.startsWith("contactphone=") && a != null) {
+                    contact.setPhone(s.substring(s.indexOf('=')+1));
                     complete += 1<<4;
-                } else if(s.startsWith("hours=") && parsingAct) {
+                } else if(s.startsWith("hours=") && a != null) {
                     a.setHours(Double.parseDouble(s.substring(s.indexOf('=')+1)));
                     complete += 1<<5;
-                } else if(s.startsWith("year=") && parsingAct) {
+                } else if(s.startsWith("year=") && a != null) {
                     a.setStartYr(Integer.parseInt(s.substring(s.indexOf('=')+1)));
                     complete += 1<<6;
-                } else if(s.equals("~~Details~~") && parsingAct) {
+                } else if(s.equals("~~Details~~") && a != null) {
                     parsingDetails = true;
-                } else if(parsingDetails) {
+                } else if(parsingDetails && a != null) {
                     if(!s.equals("~~/Details~~")) {
                         details += s + "\n";
                     } else {
@@ -654,14 +452,13 @@ public class Main extends Application {
                         a.setDetails(details);
                         complete += 1<<7;
                     }
-                } else if(parsingAct && s.equals("~/Activity~")) {
+                } else if((a != null) && s.equals("~/Activity~")) {
                     if(complete == (1<<8) - 1) {
-                        a.setContact(c);
+                        a.setContact(contact);
                         years.addData(a);
-                        parsingAct = false;
                         complete = 0;
                         a = null;
-                        c = null;
+                        contact = null;
                     } else {
                         throw new ParseException("Incomplete CL activity at line "+lineNum,0);
                     }
