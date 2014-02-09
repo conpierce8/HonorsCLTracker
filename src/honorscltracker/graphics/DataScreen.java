@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.TreeSet;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
@@ -51,6 +52,7 @@ public class DataScreen extends Screen {
     private Button addActivity;
     private Text message;
     private HTMLEditor detailsField;
+    private final ScrollPane scrollpane;
     
     /**
      * Creates a new DataScreen class, which is a GUI for entering complementary
@@ -62,6 +64,7 @@ public class DataScreen extends Screen {
      */
     public DataScreen(Stage primaryStage, HashMap<String, Object> prefs, TreeSet<String> years) {
         super(primaryStage, prefs, "data");
+        this.scrollpane = new ScrollPane();
         // By default, we're not editing anything an activity; we're creating
         // a new one (i.e. 'owner' is null)
         owner = null;
@@ -78,6 +81,7 @@ public class DataScreen extends Screen {
         VBox v = new VBox();
         v.setMaxWidth((Double) settings.get("stageWidth")-35);
         v.setSpacing(10);
+        v.setPadding(new Insets(0,10,0,10));
         
         yearCombo = new ComboBox();
         yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years));
@@ -172,11 +176,10 @@ public class DataScreen extends Screen {
         });
         v.getChildren().add(addActivity);
         
-        ScrollPane scrollpane = new ScrollPane();
         scrollpane.setStyle("-fx-background-color: rgb(0,0,0,0);");
         scrollpane.setPrefSize((Double) settings.get("stageWidth")-20,(Double) settings.get("stageHeight")-40);
         scrollpane.setContent(v);
-        
+
         Group backButton = new Group();
         Rectangle r = new Rectangle(0,0,30,7);
         r.setFill((Paint) settings.get("datascreenButtonBGPaint"));
@@ -203,6 +206,16 @@ public class DataScreen extends Screen {
         content.setLayoutY(25);
         
         this.getChildren().add(content);
+    }
+    
+    /**
+     * Updates the academic year combo box to display the list of all academic
+     * years contained in <code>years</code>.
+     * @param years the collection of academic years ("####-##") to be displayed
+     * in the years combo box
+     */
+    public void updateYearCombo(TreeSet<String> years) {
+        yearCombo.setItems(javafx.collections.FXCollections.observableArrayList(years));
     }
     
     /*
@@ -369,6 +382,8 @@ public class DataScreen extends Screen {
             detailsField.setHtmlText("<html><head></head><body></body></html>");
             addActivity.setText("Add Comp Learning Activity");
         }
+        message.setText("");
+        scrollpane.setVvalue(scrollpane.getVmin());
         this.owner = owner;
     }
     

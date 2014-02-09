@@ -54,7 +54,8 @@ public class HomeScreen extends Screen {
         HBox fileBox = new HBox();
         fileBox.setAlignment(Pos.CENTER);
         fileBox.setSpacing(20);
-        f = new TextField("Enter file name here");
+        f = new TextField();
+        f.setPromptText("Enter file name here");
         f.setAlignment(Pos.BASELINE_CENTER);
         f.setPrefColumnCount(50);
         f.setOnDragOver(new EventHandler<DragEvent>() {
@@ -89,7 +90,7 @@ public class HomeScreen extends Screen {
             public void handle(Event event) {
                 File temp = fileChooser.showOpenDialog(primaryStage);
                 if(temp != null) {
-                    f.setText(temp.getAbsolutePath());
+                    openFileHandler.action(temp.getAbsolutePath());
                 }
             }
         });

@@ -176,8 +176,11 @@ public class MainScreen extends Screen {
         Group content = new Group();
         layoutTitle();
         content.getChildren().add(title);
+        double stageWidth = (Double) settings.get("stageWidth");
         
         getTable();
+        Paint helpBG = (Paint) settings.get("mainscreenBGPaint");
+        Paint helpFG = (Paint) settings.get("mainscreenBGStroke");
         
         prevButton = new Group();
         Rectangle prevButtonBG = new Rectangle(50,tableY-10);
@@ -190,6 +193,24 @@ public class MainScreen extends Screen {
         Polygon prevButtonFG = new Polygon(35,(tableY-20)/2,15,(tableY-10)/2,35,tableY/2);
         prevButtonFG.setFill((Paint) settings.get("mainscreenButtonFGPaint"));
         prevButton.getChildren().add(prevButtonFG);
+        final HelpHint hhPrevButton = new HelpHint(helpFG, helpBG, helpFG, "Click to move to the previous year.");
+        hhPrevButton.setLayoutX(10);
+        hhPrevButton.setLayoutY(tableY);
+        hhPrevButton.setVisible(false);
+        prevButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhPrevButton.setVisible(helpEnabled);
+            }
+        });
+        prevButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhPrevButton.setVisible(false);
+            }
+        });
         prevButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
@@ -211,6 +232,24 @@ public class MainScreen extends Screen {
         Polygon nextButtonFG = new Polygon(15,(tableY-20)/2,35,(tableY-10)/2,15,tableY/2);
         nextButtonFG.setFill((Paint) settings.get("mainscreenButtonFGPaint"));
         nextButton.getChildren().add(nextButtonFG);
+        final HelpHint hhNextButton = new HelpHint(helpFG, helpBG, helpFG, "Click to move to the next year.");
+        hhNextButton.setLayoutX(stageWidth-hhNextButton.getBoundsInParent().getWidth()-10);
+        hhNextButton.setLayoutY(tableY);
+        hhNextButton.setVisible(false);
+        nextButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhNextButton.setVisible(helpEnabled);
+            }
+        });
+        nextButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhNextButton.setVisible(false);
+            }
+        });
         nextButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
@@ -234,6 +273,24 @@ public class MainScreen extends Screen {
         inputButton.getChildren().add(inputButtonFg);
         inputButton.setLayoutX((Double) settings.get("stageWidth")-145);
         inputButton.setLayoutY(-7.5);
+        final HelpHint hhInputButton = new HelpHint(helpFG, helpBG, helpFG, "Click to input comp learning activities.");
+        hhInputButton.setLayoutX(stageWidth-115-hhInputButton.getBoundsInParent().getWidth());
+        hhInputButton.setLayoutY(10);
+        hhInputButton.setVisible(false);
+        inputButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhInputButton.setVisible(helpEnabled);
+            }
+        });
+        inputButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhInputButton.setVisible(false);
+            }
+        });
         inputButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
@@ -254,6 +311,24 @@ public class MainScreen extends Screen {
         saveButton.getChildren().add(saveButtonFg);
         saveButton.setLayoutX((Double) settings.get("stageWidth")-185);
         saveButton.setLayoutY(-7.5);
+        final HelpHint hhSaveButton = new HelpHint(helpFG, helpBG, helpFG, "Click to save.");
+        hhSaveButton.setLayoutX(stageWidth-155-hhSaveButton.getBoundsInParent().getWidth());
+        hhSaveButton.setLayoutY(10);
+        hhSaveButton.setVisible(false);
+        saveButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhSaveButton.setVisible(helpEnabled);
+            }
+        });
+        saveButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhSaveButton.setVisible(false);
+            }
+        });
         saveButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
@@ -275,6 +350,24 @@ public class MainScreen extends Screen {
         homeButton.getChildren().add(homeButtonFg);
         homeButton.setLayoutX(2.5);
         homeButton.setLayoutY(((Double) settings.get("stageHeight") - 35)/2-15);
+        final HelpHint hhHomeButton = new HelpHint(helpFG, helpBG, helpFG, "Click to return to the welcome screen.");
+        hhHomeButton.setLayoutX(18);
+        hhHomeButton.setLayoutY(homeButton.getLayoutY());
+        hhHomeButton.setVisible(false);
+        homeButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhHomeButton.setVisible(helpEnabled);
+            }
+        });
+        homeButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhHomeButton.setVisible(false);
+            }
+        });
         homeButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
 
             @Override
@@ -287,12 +380,18 @@ public class MainScreen extends Screen {
         table.setLayoutY(tableY);
         table.setLayoutX(10);
         content.getChildren().add(table);
+        content.getChildren().addAll(hhPrevButton, hhNextButton, hhInputButton,
+                hhSaveButton, hhHomeButton);
         content.setLayoutY(25);
         
         this.getChildren().add(content);
     }
     
     private void getTable() {
+        final HelpHint hhTable = new HelpHint((Paint) settings.get("mainscreenBGStroke"),
+                (Paint) settings.get("mainscreenBGPaint"),
+                (Paint) settings.get("mainscreenBGStroke"),
+                "Left-click to view details.\nRight-click to edit.");
         final Object[][] tableData = new Object[4][data.getSize()+1];
         int row = 0;
         Group dataRows = new Group();
@@ -300,6 +399,8 @@ public class MainScreen extends Screen {
         asdf.setFont((Font) settings.get("tableDataTextFont"));
         double rowHeight = asdf.getBoundsInParent().getHeight() + 4;
         double totalHours = 0;
+        final double stageWidth = (Double) settings.get("stageWidth");
+        final double stageHeight = (Double) settings.get("stageHeight");
         for(String s : data.getAllDescs()) {
             int count = 0;
             for(CLActivity c : data.getCLActivities(s)) {
@@ -310,7 +411,34 @@ public class MainScreen extends Screen {
                 tableData[2][row] = c.getContact().getName();
                 tableData[3][row] = c.getHours();
                 totalHours += c.getHours();
-                dataRows.getChildren().add(getTableRowRect(row,rowHeight, c));
+                Rectangle rowBG = getTableRowRect(row,rowHeight, c);
+                rowBG.setOnMouseEntered(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent t) {
+                        if(helpEnabled) {
+                            if(t.getSceneX() + hhTable.getWidth() > stageWidth) {
+                                hhTable.setLayoutX(t.getSceneX() - hhTable.getWidth());
+                            } else {
+                                hhTable.setLayoutX(t.getSceneX());
+                            }
+                            if(t.getSceneY() + hhTable.getHeight() > stageHeight) {
+                                hhTable.setLayoutY(t.getSceneY() - hhTable.getHeight());
+                            } else {
+                                hhTable.setLayoutY(t.getSceneY());
+                            }
+                            MainScreen.this.getChildren().add(hhTable);
+                        }
+                    }
+                });
+                rowBG.setOnMouseExited(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent t) {
+                        if(helpEnabled) {
+                            MainScreen.this.getChildren().remove(hhTable);
+                        }
+                    }
+                });
+                dataRows.getChildren().add(rowBG);
                 count ++;
                 row ++;
             }
@@ -318,8 +446,6 @@ public class MainScreen extends Screen {
         dataRows.getChildren().add(getTableRowRect(row, rowHeight, null));
         tableData[2][tableData[2].length-1] = "TOTAL";
         tableData[3][tableData[3].length-1] = totalHours;
-        
-        final double stageWidth = (Double) settings.get("stageWidth");
         
         Group c2 = getColumn(tableData[1], rowHeight, 180);
         Text c2Head = new Text("Date");
@@ -411,6 +537,7 @@ public class MainScreen extends Screen {
             rowData.setFont((Font) settings.get("tableDataTextFont"));
             rowData.setFill((Paint) settings.get("tableDataTextPaint"));
             rowData.setLayoutY(y+rowHeight/2);
+            rowData.setMouseTransparent(true);
             double dataWidth = rowData.getBoundsInParent().getWidth();
             if(maxWidth > 0 && dataWidth > maxWidth - 4) {
                 double percent = (maxWidth < 4) ? 0 : ((maxWidth - 4) / dataWidth);

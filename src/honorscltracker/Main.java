@@ -75,9 +75,11 @@ public class Main extends Application {
 
     private File file;
     
-    private Stack<UserAction> undo, redo;
+    private Stack<UserAction> undo = new Stack<>(), redo = new Stack<>();
     
     private boolean unsavedChanges = false;
+    private boolean showHelp = false;
+    
     //</editor-fold>
     
     /**
@@ -124,16 +126,16 @@ public class Main extends Application {
         fileChooser = new FileChooser();
         mainScreen = new MainScreen(primaryStage, settings, new Year(currentYear));
         mainScreen.setLayoutX(width);
-        mainScreen.setLayoutY(height);
+        mainScreen.setLayoutY(height+2);
         detailScreen = new DetailScreen(primaryStage, settings);
         detailScreen.setLayoutX(2*width);
-        detailScreen.setLayoutY(height);
+        detailScreen.setLayoutY(height+2);
         dataScreen = new DataScreen(primaryStage, settings, years.getYearsList());
         dataScreen.setLayoutX(width);
         dataScreen.setLayoutY(0);
         homeScreen = new HomeScreen(primaryStage, settings);
         homeScreen.setLayoutX(0);
-        homeScreen.setLayoutY(height);
+        homeScreen.setLayoutY(height+2);
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="Action handlers">
@@ -142,9 +144,10 @@ public class Main extends Application {
             @Override
             public void action(Object data) {
                 years = new YearList();
+                file = null;
                 now();
                 updateMainScreen(currentYear);
-                switchScreens("home", "main");
+                switchScreens("homescreen", "mainscreen");
             }
         });
         
@@ -158,7 +161,7 @@ public class Main extends Application {
                     openExistingFile((String) data);
                 } catch (ParseException ex) {
                     homeScreen.fileError(ex.getMessage());
-                }
+                } 
             }
         });
         
@@ -168,6 +171,7 @@ public class Main extends Application {
             @Override
             public void action(Object data) {
                 dataScreen.setOwner(null);
+                dataScreen.updateYearCombo(years.getYearsList());
                 switchScreens("mainscreen", "datascreen");
             }
         });
@@ -187,6 +191,7 @@ public class Main extends Application {
         mainScreen.setEditCLActivityRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
+                dataScreen.updateYearCombo(years.getYearsList());
                 dataScreen.setOwner((CLActivity) data);
                 switchScreens("mainscreen", "datascreen");
             }
@@ -238,6 +243,7 @@ public class Main extends Application {
         dataScreen.setMainScreenRequestHandler(new Handler() {
             @Override
             public void action(Object data) {
+                updateMainScreen(currentYear);
                 switchScreens("datascreen", "mainscreen");
             }
         });
@@ -270,11 +276,27 @@ public class Main extends Application {
                 switchScreens("detailscreen", "mainscreen");
             }
         });
+        
+        Handler helpHandler = new Handler() {
+
+            @Override
+            public void action(Object data) {
+                showHelp = !showHelp;
+                mainScreen.setHelpEnabled(showHelp);
+                dataScreen.setHelpEnabled(showHelp);
+                detailScreen.setHelpEnabled(showHelp);
+                homeScreen.setHelpEnabled(showHelp);
+            }
+        };
+        mainScreen.setToggleHelpEnabledRequestHandler(helpHandler);
+        dataScreen.setToggleHelpEnabledRequestHandler(helpHandler);
+        detailScreen.setToggleHelpEnabledRequestHandler(helpHandler);
+        homeScreen.setToggleHelpEnabledRequestHandler(helpHandler);
         //</editor-fold>
         
         root.getChildren().addAll(homeScreen, mainScreen, dataScreen, detailScreen);
         root.setTranslateX(0);
-        root.setTranslateY(-height);
+        root.setTranslateY(-height-2);
 //        root.setScaleX(1/3);
 
         Scene scene = new Scene(root, (Double) settings.get("stageWidth"), 
@@ -312,37 +334,37 @@ public class Main extends Application {
         switch(from) {
             case "mainscreen": 
                 startPt.setX(0.5*width);
-                startPt.setY(0);
+                startPt.setY(-1);
                 break;
             case "datascreen": 
                 startPt.setX(0.5*width);
-                startPt.setY(height);
+                startPt.setY(height+1);
                 break;
             case "detailscreen":
                 startPt.setX(-0.5*width);
-                startPt.setY(0);
+                startPt.setY(-1);
                 break;
             case "homescreen": 
                 startPt.setX(1.5*width);
-                startPt.setY(0);
+                startPt.setY(-1);
                 break;
         }
         switch(to) {
             case "mainscreen": 
                 endPt.setX(0.5*width);
-                endPt.setY(0);
+                endPt.setY(-1);
                 break;
             case "datascreen": 
                 endPt.setX(0.5*width);
-                endPt.setY(height);
+                endPt.setY(height+1);
                 break;
             case "detailscreen":
                 endPt.setX(-0.5*width);
-                endPt.setY(0);
+                endPt.setY(-1);
                 break;
             case "homescreen": 
                 endPt.setX(1.5*width);
-                endPt.setY(0);
+                endPt.setY(-1);
                 break;
         }
         path.getElements().add(startPt);
@@ -357,25 +379,29 @@ public class Main extends Application {
      * the place to do it
      */
     private void defaultSettings() {
-        settings.put("homescreenBGPaint", Color.BLACK);
-        settings.put("homescreenBGStroke", new Color(1,.5,0,.8));
+        settings.put("homescreenBGPaint", new Color(0,0,0,0.9));
+        settings.put("homescreenBGStroke", Color.DARKORANGE);
         settings.put("homescreenTextPaint", Color.LIGHTGRAY);
         settings.put("homescreenTextFont", new Font("Arial", 16));
 //        settings.put("mainscreenBGPaint", new Color(.506, .243, .118, .8));
-        settings.put("mainscreenBGPaint", new Color(0,0,0,.8));
-        settings.put("mainscreenBGStroke", Color.BLACK);
-        settings.put("datascreenBGPaint", new Color(.1, .1, .1, .8));
-        settings.put("datascreenBGStroke", Color.TRANSPARENT);
-        settings.put("detailscreenBGPaint", Color.BLACK);
+        settings.put("mainscreenBGPaint", new Color(0,0,0,.9));
+        settings.put("mainscreenBGStroke", Color.DARKORANGE);
+        settings.put("datascreenBGPaint", new Color(0, 0, 0, .9));
+        settings.put("datascreenBGStroke", Color.DARKORANGE);
+        settings.put("detailscreenBGPaint", new Color(0,0,0,0.9));
         settings.put("detailscreenBGStroke", Color.DARKORANGE);
         settings.put("mainscreenWindowButtonFGPaint", new Color(1,.5,0,1));
         settings.put("homescreenWindowButtonFGPaint", new Color(1,.5,0,1));
         settings.put("datascreenWindowButtonFGPaint", new Color(1,.5,0,1));
-        settings.put("detailscreenWindowButtonFGPaint", Color.WHITE);
+        settings.put("detailscreenWindowButtonFGPaint", Color.DARKORANGE);
         settings.put("mainscreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("homescreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("datascreenWindowButtonBGPaint", Color.TRANSPARENT);
         settings.put("detailscreenWindowButtonBGPaint", Color.TRANSPARENT);
+        settings.put("homescreenHelpButtonEnabledBGPaint", new Color(.3,.3,.3,1));
+        settings.put("mainscreenHelpButtonEnabledBGPaint", new Color(.3,.3,.3,1));
+        settings.put("datascreenHelpButtonEnabledBGPaint", new Color(.3,.3,.3,1));
+        settings.put("detailscreenHelpButtonEnabledBGPaint", new Color(.3,.3,.3,1)); 
         settings.put("mainscreenLabelPaint", Color.WHITE);
         settings.put("mainscreenLabelFont", new Font("Arial", 30));
         settings.put("tableDataTextPaint", Color.BLACK);
@@ -409,7 +435,10 @@ public class Main extends Application {
      */
     private void openExistingFile(String fileName) throws ParseException {
         file = new File(fileName);
+        if(!file.exists())
+            throw new ParseException("File does not exist!",0);
         loadFromFile(file);
+        now();
         if(years.indexOf(currentYear) >= 0) {
             mainScreen.update(years.get(years.indexOf(currentYear)));
         } else {
