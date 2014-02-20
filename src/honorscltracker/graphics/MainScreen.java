@@ -392,6 +392,11 @@ public class MainScreen extends Screen {
                 (Paint) settings.get("mainscreenBGPaint"),
                 (Paint) settings.get("mainscreenBGStroke"),
                 "Left-click to view details.\nRight-click to edit.");
+        final HelpHint hhTableTotal = new HelpHint(
+                (Paint) settings.get("mainscreenBGStroke"),
+                (Paint) settings.get("mainscreenBGPaint"),
+                (Paint) settings.get("mainscreenBGStroke"),
+                "Total hours completed this year");
         final Object[][] tableData = new Object[4][data.getSize()+1];
         int row = 0;
         Group dataRows = new Group();
@@ -400,7 +405,6 @@ public class MainScreen extends Screen {
         double rowHeight = asdf.getBoundsInParent().getHeight() + 4;
         double totalHours = 0;
         final double stageWidth = (Double) settings.get("stageWidth");
-        final double stageHeight = (Double) settings.get("stageHeight");
         for(String s : data.getAllDescs()) {
             int count = 0;
             for(CLActivity c : data.getCLActivities(s)) {
@@ -411,39 +415,13 @@ public class MainScreen extends Screen {
                 tableData[2][row] = c.getContact().getName();
                 tableData[3][row] = c.getHours();
                 totalHours += c.getHours();
-                Rectangle rowBG = getTableRowRect(row,rowHeight, c);
-                rowBG.setOnMouseEntered(new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent t) {
-                        if(helpEnabled) {
-                            if(t.getSceneX() + hhTable.getWidth() > stageWidth) {
-                                hhTable.setLayoutX(t.getSceneX() - hhTable.getWidth());
-                            } else {
-                                hhTable.setLayoutX(t.getSceneX());
-                            }
-                            if(t.getSceneY() + hhTable.getHeight() > stageHeight) {
-                                hhTable.setLayoutY(t.getSceneY() - hhTable.getHeight());
-                            } else {
-                                hhTable.setLayoutY(t.getSceneY());
-                            }
-                            MainScreen.this.getChildren().add(hhTable);
-                        }
-                    }
-                });
-                rowBG.setOnMouseExited(new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent t) {
-                        if(helpEnabled) {
-                            MainScreen.this.getChildren().remove(hhTable);
-                        }
-                    }
-                });
-                dataRows.getChildren().add(rowBG);
+                dataRows.getChildren().add(getTableRowRect(row,rowHeight, c, hhTable));
                 count ++;
                 row ++;
             }
         }
-        dataRows.getChildren().add(getTableRowRect(row, rowHeight, null));
+        
+        dataRows.getChildren().add(getTableRowRect(row, rowHeight, null, hhTableTotal));
         tableData[2][tableData[2].length-1] = "TOTAL";
         tableData[3][tableData[3].length-1] = totalHours;
         
@@ -557,7 +535,8 @@ public class MainScreen extends Screen {
      * row is formatted according to the settings contained in the GUI
      * settings.
      */
-    private Rectangle getTableRowRect(int row, double dataRowHeight, final CLActivity c) {
+    private Rectangle getTableRowRect(int row, double dataRowHeight, 
+            final CLActivity c, final HelpHint hh) {
         Rectangle r = new Rectangle();
         r.setWidth((Double) settings.get("stageWidth") - 20 - (Double) settings.get("scrollbarWidth"));
         r.setHeight(dataRowHeight);
@@ -580,6 +559,34 @@ public class MainScreen extends Screen {
                 }
             });
         }
+        final double stageHeight = (Double) settings.get("stageHeight");
+        final double stageWidth = (Double) settings.get("stageWidth");
+        r.setOnMouseEntered(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent t) {
+                if(helpEnabled) {
+                    if(t.getSceneX() + hh.getWidth() > stageWidth) {
+                        hh.setLayoutX(t.getSceneX() - hh.getWidth());
+                    } else {
+                        hh.setLayoutX(t.getSceneX());
+                    }
+                    if(t.getSceneY() + hh.getHeight() > stageHeight) {
+                        hh.setLayoutY(t.getSceneY() - hh.getHeight());
+                    } else {
+                        hh.setLayoutY(t.getSceneY());
+                    }
+                    MainScreen.this.getChildren().add(hh);
+                }
+            }
+        });
+        r.setOnMouseExited(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent t) {
+                if(helpEnabled) {
+                    MainScreen.this.getChildren().remove(hh);
+                }
+            }
+        });
         return r;
     }
 

@@ -412,11 +412,11 @@ public class Main extends Application {
         settings.put("mainscreenButtonBGPaint", new Color(.4,.4,.4,1));
         settings.put("mainscreenButtonOutlinePaint", Color.WHITE);
         settings.put("datascreenButtonFGPaint", Color.WHITE);
-        settings.put("datascreenButtonBGPaint", Color.TRANSPARENT);
+        settings.put("datascreenButtonBGPaint", new Color(.4,.4,.4,1));
         settings.put("datascreenButtonOutlinePaint", Color.WHITE);
-        settings.put("detailscreenButtonFGPaint", Color.BLACK);
-        settings.put("detailscreenButtonBGPaint", Color.WHITE);
-        settings.put("detailscreenButtonOutlinePaint", Color.BLACK);
+        settings.put("detailscreenButtonFGPaint", Color.WHITE);
+        settings.put("detailscreenButtonBGPaint", new Color(.4,.4,.4,1));
+        settings.put("detailscreenButtonOutlinePaint", Color.WHITE);
         settings.put("tableRow1BGPaint", new Color(1, 0.5, 0, 1));
         settings.put("tableRow2BGPaint", new Color(1, .639, .288, 1));
         settings.put("tableHeaderBGPaint", Color.TRANSPARENT);

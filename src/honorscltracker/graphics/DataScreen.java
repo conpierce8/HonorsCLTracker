@@ -199,9 +199,33 @@ public class DataScreen extends Screen {
         });
         backButton.setLayoutX((Double) settings.get("stageWidth") - 145);
         backButton.setLayoutY((Double) settings.get("stageHeight") - 34.5);
-        
+        final HelpHint hhBackButton = new HelpHint(
+                (Paint) settings.get("datascreenBGStroke"),
+                (Paint) settings.get("datascreenBGPaint"),
+                (Paint) settings.get("datascreenBGStroke"),
+                "Click to return to comp learning table");
+        hhBackButton.setLayoutX(backButton.getLayoutX()+20-hhBackButton.getWidth());
+        hhBackButton.setLayoutY(backButton.getLayoutY()-10-hhBackButton.getHeight());
+        backButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                if(helpEnabled) {
+                    hhBackButton.setVisible(true);
+                }
+            }
+        });
+        backButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                hhBackButton.setVisible(false);
+            }
+        });
+        hhBackButton.setVisible(false);
         content.getChildren().add(scrollpane);
         content.getChildren().add(backButton);
+        content.getChildren().add(hhBackButton);
         content.setLayoutX(10);
         content.setLayoutY(25);
         
