@@ -24,6 +24,7 @@ public class UserAction {
     private int type;
     private CLActivity previous;
     private CLActivity current;
+    private boolean saved = false;
     
     /*
      * Private constructor for UserActions.  Declared private to avoid
@@ -93,6 +94,18 @@ public class UserAction {
      */
     public int getType() {
         return type;
+    }
+    
+    public void save() {
+        saved = true;
+    }
+    
+    public void unsave() {
+        saved = false;
+    }
+    
+    public boolean isSaved() {
+        return saved;
     }
     
 }

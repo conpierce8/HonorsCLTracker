@@ -264,6 +264,9 @@ public class Main extends Application {
         dataScreen.setUpdateActivityHandler(new Handler() {
             @Override
             public void action(Object data) {
+                CLActivity[] activities = (CLActivity[]) data;
+                years.get(years.indexOf(currentYear)).removeCLActivity(activities[0]);
+                years.get(years.indexOf(currentYear)).addCLActivity(activities[1]);
                 mainScreen.update();
             }
         });
@@ -292,6 +295,20 @@ public class Main extends Application {
         dataScreen.setToggleHelpEnabledRequestHandler(helpHandler);
         detailScreen.setToggleHelpEnabledRequestHandler(helpHandler);
         homeScreen.setToggleHelpEnabledRequestHandler(helpHandler);
+        
+        Handler closeHandler = new Handler() {
+
+            @Override
+            public void action(Object data) {
+                //TODO: check if changes are saved
+                primaryStage.close();
+            }
+            
+        };
+        mainScreen.setCloseButtonClickedHandler(closeHandler);
+        dataScreen.setCloseButtonClickedHandler(closeHandler);
+        detailScreen.setCloseButtonClickedHandler(closeHandler);
+        homeScreen.setCloseButtonClickedHandler(closeHandler);
         //</editor-fold>
         
         root.getChildren().addAll(homeScreen, mainScreen, dataScreen, detailScreen);

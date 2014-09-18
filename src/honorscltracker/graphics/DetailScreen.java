@@ -57,7 +57,33 @@ public class DetailScreen extends Screen {
                 mainscreenRequest.action(null);
             }
         });
+        final HelpHint hhBackButton = new HelpHint((Paint) settings.get("detailscreenBGStroke"),
+                (Paint) settings.get("detailscreenBGPaint"),
+                (Paint) settings.get("detailscreenBGStroke"),
+                "Click to return to comp learning table");
+        hhBackButton.setLayoutX(10);
+        hhBackButton.setLayoutY(backButton.getLayoutY() + 15);
+        hhBackButton.setVisible(false);
+        backButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                if(helpEnabled) {
+                    hhBackButton.setVisible(true);
+                }
+            }
+        });
+        backButton.setOnMouseExited(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent t) {
+                if(helpEnabled) {
+                    hhBackButton.setVisible(false);
+                }
+            }
+        });
         getChildren().add(backButton);
+        getChildren().add(hhBackButton);
     }
     
     /**

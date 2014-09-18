@@ -45,8 +45,8 @@ public class HomeScreen extends Screen {
         Text t = new Text("Welcome to the Honors Comp Learning tracker!\n"
                 + "If you have an existing file, click Open File to open the"
                 + " file\n If you have not used Comp Learning Tracker before, "
-                + "click New.\n\nFor help, click the ? button in the upper "
-                + "right of the window.");
+                + "click New.\n\nFor help hints when using this program,\n"
+                + " click the (?) button in the upper right of the window.");
         t.setTextAlignment(TextAlignment.CENTER);
         t.setFont((Font) settings.get("homescreenTextFont"));
         t.setFill((Paint) settings.get("homescreenTextPaint"));

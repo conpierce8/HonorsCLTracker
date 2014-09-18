@@ -31,6 +31,7 @@ public class Screen extends Group {
     private double dragOffsetY = 0;
     private boolean dragging;
     private Handler toggleHelpEnabledHandler;
+    private Handler closeButtonClickedHandler;
     
     
     public Screen(final Stage primaryStage, HashMap<String, Object> settings, String screenType) {
@@ -89,7 +90,7 @@ public class Screen extends Group {
 
             @Override
             public void handle(MouseEvent arg0) {
-                primaryStage.close();
+                closeButtonClickedHandler.action(null);
             }
         });
         getChildren().add(closeButton);
@@ -261,5 +262,15 @@ public class Screen extends Group {
      */
     public void setToggleHelpEnabledRequestHandler(Handler h) {
         toggleHelpEnabledHandler = h;
+    }
+    
+    /**
+     * Sets the handler to be called when the user clicks the close button.
+     * <code>null</code> is passed as a parameter to the handler's
+     * <code>action</code> method when the <code>action</code> method is called.
+     * @param h the handler to be called when the user clicks the close button
+     */
+    public void setCloseButtonClickedHandler(Handler h) {
+        closeButtonClickedHandler = h;
     }
 }

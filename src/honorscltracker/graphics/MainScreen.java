@@ -405,6 +405,7 @@ public class MainScreen extends Screen {
         double rowHeight = asdf.getBoundsInParent().getHeight() + 4;
         double totalHours = 0;
         final double stageWidth = (Double) settings.get("stageWidth");
+        System.out.println("Drawing table");
         for(String s : data.getAllDescs()) {
             int count = 0;
             for(CLActivity c : data.getCLActivities(s)) {

@@ -162,10 +162,9 @@ public class DataScreen extends Screen {
         detailsField.setPrefHeight(200);
         v.getChildren().add(detailsField);
         
-        message = new Text("");
-        message.setFont(new javafx.scene.text.Font(16));
-        v.getChildren().add(message);
-        
+        HBox hb6 = new HBox();
+        hb6.setPadding(new Insets(0,0,10,0));
+        hb6.setSpacing(10);
         addActivity = new Button("Add Comp Learning Event");
         addActivity.setOnAction(new EventHandler<ActionEvent>() {
 
@@ -174,7 +173,12 @@ public class DataScreen extends Screen {
                 buttonClicked();
             }
         });
-        v.getChildren().add(addActivity);
+        hb6.getChildren().add(addActivity);
+        
+        message = new Text("");
+        message.setFont(new javafx.scene.text.Font(16));
+        hb6.getChildren().add(message);
+        v.getChildren().add(hb6);
         
         scrollpane.setStyle("-fx-background-color: rgb(0,0,0,0);");
         scrollpane.setPrefSize((Double) settings.get("stageWidth")-20,(Double) settings.get("stageHeight")-40);
@@ -299,7 +303,11 @@ public class DataScreen extends Screen {
             message.setText(error);
             return;
         }
-        CLActivity j = (owner == null)? new CLActivity() : owner;
+        CLActivity j = new CLActivity();
+        //If owner is not null; we are editing a comp learning activity; the
+        //activity being edited "owns" the dataScreen. The local variable j is
+        //set to owner, so changes should be automatically be reflected on the
+        //mainScreen when the screen is repainted.
         Contact c = new Contact();
         c.setEmail(contactEmail);
         c.setName(contactName);
@@ -314,7 +322,7 @@ public class DataScreen extends Screen {
             if(owner == null) {
                 newActivityHandler.action(j);
             } else {
-                updateActivityHandler.action(j);
+                updateActivityHandler.action(new CLActivity[]{owner,j});
             }
         }
         String action = (owner == null)?"created":"updated";
@@ -341,10 +349,14 @@ public class DataScreen extends Screen {
      * This occurs when user clicks the "Add Comp Learning Event"
      * button, all required fields are filled, and the <code>DataScreen</code>
      * was was opened in 'edit activity' mode.  The handler's 
-     * <code>action(Object)</code> method will be called and the edited
-     * activity will be passed to the <code>data</code> parameter.  The
-     * <code>CLActivity</code> that is passed is a separate object from the
-     * original.
+     * <code>action(Object)</code> method will be called and a 2-element array
+     * of <code>CLActivity</code>s activity will be passed to the
+     * <code>data</code> parameter:
+     * <pre>
+     * data = new CLActivity[]{&lt;old version&gt;,&lt;edited version&gt;}
+     * </pre>
+     * This handler should remove the old activity from <code>Year</code> in
+     * which it is contained, and add the edited version.
      * @param h The handler to be called when the activity is updated
      */
     public void setUpdateActivityHandler(Handler h) {

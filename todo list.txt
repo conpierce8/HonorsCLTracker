@@ -1,0 +1,30 @@
+SUMMARY OF CHANGES
+
+DataScreen
+	Made 'scrollpane' a class variable
+	Added a method to update the 'year' combo box
+
+HelpHint
+	<created class>
+
+HomeScreen
+	Changed text field default text to a prompt text
+	Made file open immediately when file is selected in dialog, instead of populating text field with the file path
+
+MainScreen
+	Added help hints
+
+Screen
+	Creation of platform for help hints
+		Boolean variables to control display of help hints
+		Boolean variable to fix help hint problems when dragging window
+		Added help hint button
+		Added window button help hints
+		Event handlers for hint buttton
+
+Main
+	Adjust layout of screens
+	Close open file when user returns to home screen
+	Updating of 'year' combo
+	Implement help handlers
+	Updates to default settings
